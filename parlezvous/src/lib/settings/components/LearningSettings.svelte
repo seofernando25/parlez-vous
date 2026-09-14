@@ -14,4 +14,12 @@
             <option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Fluent</option>
         </select>
     </div>
+    <div class="settings-row">
+        <label for="tutor-tone">Tutor style</label>
+        <select id="tutor-tone" class="settings-field" bind:value={settingsState.tutorTone} onchange={onSave}>
+            <option value="chill">Chill</option>
+            <option value="balanced">Balanced</option>
+            <option value="focused">Focused</option>
+        </select>
+    </div>
 </div>

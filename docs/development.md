@@ -59,11 +59,27 @@ The learning structure is defined inside `parlezvous/src/lib/curriculum.ts`:
 
 ---
 
-## 3. Database Migrations
+## 3. Database Schema
 
-SQLite schema updates are defined in `parlezvous/src-tauri/src/db/schema.rs` and applied by `db/mod.rs`:
+The application deliberately uses a **single canonical greenfield schema** in `parlezvous/src-tauri/src/db/schema.rs`. Do not add a historical `SCHEMA_VN` migration chain.
 
-- To alter tables or add columns, define a new schema SQL batch constant (e.g. `pub const SCHEMA_V17: &str = ...`).
-- Increment `DB_VERSION_NUM`.
-- Append the new schema constant to the migration array in `db/mod.rs`.
-- The migrator automatically compares the database's `PRAGMA user_version` value and applies all pending schema migrations sequentially when the application boots up.
+When the product schema changes during this pre-stable phase:
+
+1. Edit `SCHEMA_CURRENT` so a new database is created in the desired final form.
+2. Update `SCHEMA_VERSION` only when an already-created canonical database must be invalidated.
+3. Update direct schema tests and SQL callers together.
+4. Keep `db/mod.rs` responsible only for recognizing the canonical schema, backing up an incompatible old database, and creating the new one.
+
+Pre-greenfield databases are preserved as timestamped `sqlite.legacy-*.db` files rather than being dragged through historical migrations.
+---
+
+## Tutor quality gate
+
+After Express Local AI is installed and running, validate the shipping teacher pipeline with:
+
+```bash
+cd parlezvous
+bun run eval:tutor
+```
+
+This is intentionally an ignored model acceptance test rather than a normal CI test because it requires the multi-gigabyte managed model. Keep ordinary unit/integration tests deterministic; use the tutor gate when changing tutor prompts, orchestration, model manifests, or llama.cpp inference settings.

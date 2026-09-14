@@ -11,7 +11,7 @@ SvelteKit UI
   │                │   ├─ generation requests
   │                │   │   ├─ *.litertlm on Android -> lazy LiteRtAdapter
   │                │   │   └─ everything else -> OpenAiCompatibleAdapter
-  │                │   └─ embeddings -> OpenAiCompatibleAdapter
+  │                │   └─ embeddings -> OpenAiCompatibleAdapter (managed local or external)
   │                ├─ SQLite + sqlite-vec
   │                ├─ RAG: PDF -> chunks -> embeddings -> vector search
   │                └─ TtsProvider
@@ -49,7 +49,11 @@ AI generation is no longer frozen to one provider at Tauri startup. `AiRouter` r
 
 LiteRT instances are created lazily on Android and are recreated if the LiteRT model/accelerator/token-limit configuration changes.
 
-Embedding generation is a separate `EmbeddingProvider` capability. RAG uses the configured OpenAI-compatible `/v1/embeddings` endpoint even when chat runs through LiteRT; LiteRT does not currently implement embeddings.
+Embedding generation is a separate `EmbeddingProvider` capability. Desktop managed AI supplies local embeddings through Qwen3-Embedding-0.6B; external endpoints can provide any compatible embedding model. Each textbook row records its embedding model and dimension, so RAG is no longer globally fixed to 768 dimensions. LiteRT does not currently implement embeddings.
+
+Desktop Express setup now installs a managed llama.cpp runtime, Qwen3.5-4B as the quality-gated multilingual teacher, and Qwen3-Embedding-0.6B for local textbook retrieval. Vision remains an optional MiniCPM-V capability. AI-dependent screens are readiness-gated so an unconfigured model never surfaces as a raw generation error.
+
+Tutor conversation is a small pipeline rather than one overloaded system prompt: task routing, exact low-temperature language work, optional correction, and short conversational presentation are separate responsibilities. Literal bubble formatting and curated false-friend drills are deterministic.
 
 The frontend now centralizes model capability decisions in `src/lib/ai/capabilities.ts` rather than scattering `model.includes("litert")` checks across chat, audio, and puzzle generation.
 
@@ -101,10 +105,10 @@ The UI now uses:
 
 ## Remaining high-value work
 
-- **Offline RAG embeddings:** textbook ingestion/search uses the remote compatibility endpoint. Fully offline Android RAG still needs an on-device embedding provider and a separate embedding-model lifecycle. The current local vector index is fixed at 768 dimensions.
+- **Offline Android RAG:** managed desktop AI now provides local embeddings and the database supports per-model vector dimensions. Fully offline Android RAG still needs a native embedding model/runtime lifecycle.
 - **VRM distribution:** the two public VRM files still total roughly 47 MB. The accidental second hashed Vite copy is gone, but the remaining avatars should eventually be compressed or installed/downloaded on demand rather than shipped in every static distribution.
 - **Native build debt:** the Android build is green, but upstream Tauri/Gradle code still emits deprecation notices. These should be handled during a deliberate Tauri/Gradle upgrade rather than mixed into application refactors.
-- **Broader behavior coverage:** TTS provider routing, chat correction persistence, and the v7→v8 settings migration now have direct regression tests, and the Android artifact is smoke-tested. The next testing step is controller-level interaction coverage for the larger learning flows.
+- **Broader behavior coverage:** provider routing, greenfield schema creation, OpenAI-compatible wire behavior, Tutor view modes, TTS routing, and chat correction persistence have direct regression coverage. The next testing step is controller-level interaction coverage for larger learning flows.
 
 ## Current capability boundaries
 
@@ -115,7 +119,7 @@ AiRouter
   ├─ ChatProvider
   ├─ ConjugationProvider
   ├─ PuzzleProvider
-  └─ EmbeddingProvider (OpenAI-compatible remote endpoint)
+  └─ EmbeddingProvider (managed localhost or external OpenAI-compatible endpoint)
 
 Media
   ├─ VoiceCaptureController -> Speech-to-text / multimodal audio

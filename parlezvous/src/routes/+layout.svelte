@@ -4,6 +4,8 @@
     import { page } from '$app/stores';
     import { Toaster } from 'svelte-french-toast';
     import { checkAiHealth } from '$lib/state/aiProvider.svelte';
+    import { refreshManagedAi } from '$lib/state/managedAi.svelte';
+    import { settingsState } from '$lib/state/settings.svelte';
     import { loadSettings } from '$lib/state/settings.svelte';
     import { loadProfile } from '$lib/state/profile.svelte';
     import { loadTheme } from '$lib/state/theme.svelte';
@@ -13,6 +15,7 @@
 
     let { children } = $props();
     let pathname = $derived($page.url.pathname);
+    let isSetup = $derived(pathname.startsWith('/setup/'));
 
     onMount(() => {
         loadTheme();
@@ -20,14 +23,23 @@
         startNotificationTicker();
         void (async () => {
             await Promise.all([loadSettings(), loadProfile()]);
-            await checkAiHealth();
+            if (settingsState.aiProvider === 'managed') await refreshManagedAi();
+            else await checkAiHealth();
         })();
     });
 </script>
 
 <Toaster />
-<div class="app-shell">
-    <DesktopSidebar {pathname} />
-    <main class="app-content">{@render children()}</main>
-    <MobileTabBar {pathname} />
-</div>
+{#if isSetup}
+    <main class="setup-shell">{@render children()}</main>
+{:else}
+    <div class="app-shell">
+        <DesktopSidebar {pathname} />
+        <main class="app-content">{@render children()}</main>
+        <MobileTabBar {pathname} />
+    </div>
+{/if}
+
+<style>
+    .setup-shell { min-height:100dvh; background:var(--pv-canvas); color:var(--pv-foreground); }
+</style>

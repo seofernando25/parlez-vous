@@ -229,13 +229,31 @@ To support offline operation on mobile devices without running a Python server:
    - **Supertonic**: local-only speech; useful for a fully offline session.
    - **Server**: bypass Supertonic and use the configured OpenAI-compatible TTS URL.
 
-Desktop playback always uses the configured server. The TTS policy is persisted in SQLite and existing installs migrate to `Auto` by default.
+Desktop playback always uses the configured server. The canonical settings schema defaults the TTS policy to `Auto`.
 
 ---
 
-## 4. AI Model Providers
+## 4. AI Setup
 
-Remote generation uses one OpenAI-compatible transport rather than vendor-specific SDKs. In **Settings → AI & Speech**, choose a preset or enter a custom endpoint:
+### Recommended desktop setup
+
+Parlez-vous can manage its own local AI runtime. Open **Settings → AI & Speech** and choose **Set up** under Local AI. The app downloads a prebuilt llama.cpp runtime plus recommended chat and embedding models into its own application-data directory, then starts them behind a localhost OpenAI-compatible endpoint. Users do not need to install Ollama, LM Studio, Python, CUDA tooling, or understand GGUF files.
+
+The managed bundle currently uses:
+
+- **Qwen3.5-4B Q4_K_M** for tutor, journal, conjugation, and generated practice;
+- **Qwen3-Embedding-0.6B Q8_0** for textbook retrieval;
+- stable aliases `parlezvous-chat` and `parlezvous-embed`, so concrete model files can change later without leaking implementation details into normal UI.
+
+The Express install is about **3.5 GB**. Vision is intentionally separate: opening Vision practice offers an optional MiniCPM-V 4.6 add-on instead of making every learner download multimodal weights.
+
+Only one managed model is kept loaded at a time to reduce memory pressure. Apple silicon uses llama.cpp's native macOS build; Windows and Linux use broad prebuilt desktop bundles. The tutor model is selected by a local quality gate rather than exposed as a normal-user setting.
+
+AI-dependent screens are readiness-gated. If Local AI has not been installed, Tutor, Journal, Vision, Conjugation, Sprint, and Code show a setup state instead of attempting a request and surfacing a runtime/model error. Non-AI learning tools remain immediately usable.
+
+### External or advanced AI
+
+Advanced users can switch **Settings → Advanced** to another OpenAI-compatible endpoint. These presets use the same transport rather than separate backend implementations:
 
 | Preset | Default API root |
 | --- | --- |
@@ -245,20 +263,8 @@ Remote generation uses one OpenAI-compatible transport rather than vendor-specif
 | OpenAI | `https://api.openai.com/v1` |
 | OpenAI-compatible | user-supplied |
 
-The custom option is appropriate for compatible vLLM/llama.cpp servers, ModelScope-served endpoints, gateways, and other services that implement the same API. Add an API key when the service requires bearer authentication. Model discovery uses `/v1/models`, but the model field is always editable so endpoints without a model catalog still work.
+Custom is appropriate for compatible vLLM/llama.cpp servers, ModelScope-served endpoints, gateways, and similar services. Model discovery uses `/v1/models` when available, but the model id remains editable. Embeddings use `/v1/embeddings`; vector dimensions are stored per textbook chunk rather than fixed in the database schema.
 
-For Ollama, for example:
+### Android native AI
 
-```bash
-ollama run gemma3:4b
-```
-
-Then use `http://localhost:11434/v1`. On a physical phone, replace localhost with a reachable LAN address. On an Android emulator, `adb reverse tcp:11434 tcp:11434` can preserve the localhost default.
-
-### Local On-Device LLM using Google LiteRT (Android)
-
-1. Enter a Hugging Face access token in Settings if the model download requires one.
-2. Download the `gemma-4-E2B-it.litertlm` model/tokenizer from the on-device AI section.
-3. Select the `.litertlm` model. `AiRouter` routes that model to native LiteRT; all other model names use the configured OpenAI-compatible endpoint.
-
-> **RAG note:** textbook PDF retrieval uses the same configured remote endpoint's `/v1/embeddings` capability. The current sqlite-vec index is `float[768]`, so the embedding model must support requesting/returning 768 dimensions. Fully offline Android RAG still requires a future on-device embedding provider.
+Android can continue to use LiteRT for on-device generation. LiteRT is separate because it is a native runtime rather than an HTTP service. Fully offline Android textbook embeddings remain future work; desktop managed AI already supplies local embeddings.

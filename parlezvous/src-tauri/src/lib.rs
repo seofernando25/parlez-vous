@@ -34,6 +34,11 @@ pub fn run() {
                 .unwrap_or_else(|_| "Beginner".to_string());
                 
             let router = AiRouter::new(db_arc.clone(), app.handle().clone());
+            let managed_ai = crate::services::managed_ai::ManagedAiRuntime::default();
+            if crate::services::settings::get_settings(db_arc.clone()).map(|settings| settings.ai_provider == "managed").unwrap_or(false) {
+                let _ = crate::services::managed_ai::start(app.handle(), &managed_ai);
+            }
+            app.manage(managed_ai);
 
             app.manage(AppState {
                 db: db_arc,
@@ -63,6 +68,10 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::system::check_ai_health,
             commands::system::list_ai_models,
+            commands::system::get_managed_ai_status,
+            commands::system::install_managed_ai,
+            commands::system::start_managed_ai,
+            commands::system::install_managed_vision,
             commands::profile::add_active_seconds,
             commands::profile::get_curriculum,
             commands::profile::add_time_xp,

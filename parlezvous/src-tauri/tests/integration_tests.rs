@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use parlezvous_lib::ai::{
     GradingVariables, JournalProvider, JournalResponse, JournalVariables, VocabItem,
 };
-use parlezvous_lib::db::SCHEMA_V1;
+use parlezvous_lib::db::SCHEMA_CURRENT;
 use parlezvous_lib::services::journal::process_journal_generation;
 use rusqlite::{ffi::sqlite3_auto_extension, Connection};
 use sqlite_vec::sqlite3_vec_init;
@@ -19,7 +19,7 @@ mockall::mock! {
 fn setup_in_memory_db() -> Connection {
     unsafe { sqlite3_auto_extension(Some(std::mem::transmute(sqlite3_vec_init as *const ()))); }
     let conn = Connection::open_in_memory().unwrap();
-    conn.execute_batch(SCHEMA_V1).unwrap();
+    conn.execute_batch(SCHEMA_CURRENT).unwrap();
     conn
 }
 

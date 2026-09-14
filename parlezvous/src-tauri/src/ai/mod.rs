@@ -6,6 +6,7 @@ pub mod litert_adapter;
 mod litert;
 pub mod router;
 pub mod tts_adapter;
+pub mod tutor;
 
 mod context;
 mod prompts;

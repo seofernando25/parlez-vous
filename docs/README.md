@@ -15,7 +15,7 @@ The application integrates cutting-edge AI technologies and cognitive science to
 Explore the documentation pages using the sidebar navigation or index links below:
 
 ### 1. [System Architecture](architecture.md)
-Learn about the dual-process architecture combining a Rust Tauri backend with a SvelteKit frontend, IPC (Inter-Process Communication) bridge commands, SQLite database migrations, and local vector RAG setup.
+Learn about the dual-process architecture combining a Rust Tauri backend with a SvelteKit frontend, IPC (Inter-Process Communication) bridge commands, the canonical SQLite schema, managed desktop AI, and local vector RAG setup.
 
 ### 2. [Application Features](features.md)
 Detailed functional details of core modules including the Spaced Repetition System (SRS) algorithm, AI-guided Journaling & Grading, interactive 3D VRM Avatar, and ONNX-based Hangul Handwriting Canvas.

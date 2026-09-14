@@ -1,4 +1,4 @@
-export type AiProviderPreset = 'ollama' | 'lmstudio' | 'openrouter' | 'openai' | 'custom';
+export type AiProviderPreset = 'managed' | 'ollama' | 'lmstudio' | 'openrouter' | 'openai' | 'custom';
 
 export interface ProviderPreset {
     id: AiProviderPreset;
@@ -8,6 +8,7 @@ export interface ProviderPreset {
 }
 
 export const AI_PROVIDER_PRESETS: ProviderPreset[] = [
+    { id: 'managed', label: 'On this device', baseUrl: 'http://127.0.0.1:11435/v1', local: true },
     { id: 'ollama', label: 'Ollama', baseUrl: 'http://localhost:11434/v1', local: true },
     { id: 'lmstudio', label: 'LM Studio', baseUrl: 'http://localhost:1234/v1', local: true },
     { id: 'openrouter', label: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', local: false },

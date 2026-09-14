@@ -5,11 +5,11 @@ export const settingsState = $state({
     targetLanguage: 'Korean',
     ttsServerUrl: 'http://localhost:5050/v1/audio/speech',
     asrServerUrl: 'http://localhost:8000/v1/audio/transcriptions',
-    aiProvider: 'ollama',
-    aiBaseUrl: 'http://localhost:11434/v1',
+    aiProvider: 'managed',
+    aiBaseUrl: 'http://127.0.0.1:11435/v1',
     aiApiKey: '',
-    embeddingModel: 'nomic-embed-text-v2-moe:latest',
-    activeModel: 'gemma4-context:latest',
+    embeddingModel: 'parlezvous-embed',
+    activeModel: 'parlezvous-chat',
     skillLevel: 'Beginner',
     huggingFaceToken: '',
     litertAccelerator: 'Auto',
@@ -19,17 +19,18 @@ export const settingsState = $state({
     activeVrm: 'avatar.vrm',
     supertonicVoiceStyle: 'voice_styles/F1.json',
     ttsProvider: 'auto' as TtsProviderPolicy,
+    tutorTone: 'balanced' as 'chill' | 'balanced' | 'focused',
     isLoaded: false
 });
 
 export async function loadSettings() {
     try {
-        const settings = await invoke<{ target_language: string, tts_server_url: string, asr_server_url: string, ai_provider: string, ai_base_url: string, ai_api_key: string, embedding_model: string, active_model: string, huggingface_token: string | null, litert_accelerator: string, litert_max_tokens: number, target_programming_language: string, coding_theme_category: string, active_vrm: string, supertonic_voice_style: string, tts_provider: TtsProviderPolicy }>('get_settings');
+        const settings = await invoke<{ target_language: string, tts_server_url: string, asr_server_url: string, ai_provider: string, ai_base_url: string, ai_api_key: string, embedding_model: string, active_model: string, huggingface_token: string | null, litert_accelerator: string, litert_max_tokens: number, target_programming_language: string, coding_theme_category: string, active_vrm: string, supertonic_voice_style: string, tts_provider: TtsProviderPolicy, tutor_tone: 'chill' | 'balanced' | 'focused' }>('get_settings');
         settingsState.targetLanguage = settings.target_language;
         settingsState.ttsServerUrl = settings.tts_server_url;
         settingsState.asrServerUrl = settings.asr_server_url;
-        settingsState.aiProvider = settings.ai_provider || 'ollama';
-        settingsState.aiBaseUrl = settings.ai_base_url || 'http://localhost:11434/v1';
+        settingsState.aiProvider = settings.ai_provider || 'managed';
+        settingsState.aiBaseUrl = settings.ai_base_url || 'http://127.0.0.1:11435/v1';
         settingsState.aiApiKey = settings.ai_api_key || '';
         settingsState.embeddingModel = settings.embedding_model;
         settingsState.activeModel = settings.active_model;
@@ -41,6 +42,7 @@ export async function loadSettings() {
         settingsState.activeVrm = settings.active_vrm;
         settingsState.supertonicVoiceStyle = settings.supertonic_voice_style;
         settingsState.ttsProvider = settings.tts_provider || 'auto';
+        settingsState.tutorTone = settings.tutor_tone || 'balanced';
 
         const skillLevel = await invoke<string>('get_user_skill_level');
         settingsState.skillLevel = skillLevel;
@@ -67,12 +69,13 @@ export async function saveSettings() {
                 active_model: settingsState.activeModel,
                 huggingface_token: settingsState.huggingFaceToken.trim() !== '' ? settingsState.huggingFaceToken : null,
                 litert_accelerator: settingsState.litertAccelerator,
-                litert_max_tokens: Number(settingsState.litertMaxTokens) || 5000,
+                litert_max_tokens: Number(settingsState.litertMaxTokens) || 1024,
                 target_programming_language: settingsState.targetProgrammingLanguage,
                 coding_theme_category: settingsState.codingThemeCategory,
                 active_vrm: settingsState.activeVrm,
                 supertonic_voice_style: settingsState.supertonicVoiceStyle,
-                tts_provider: settingsState.ttsProvider
+                tts_provider: settingsState.ttsProvider,
+                tutor_tone: settingsState.tutorTone
             }
         });
 

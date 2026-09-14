@@ -8,3 +8,5 @@ pub mod rag;
 pub mod settings;
 pub mod srs;
 pub mod vocab;
+
+pub mod managed_ai;

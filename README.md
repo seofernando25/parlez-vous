@@ -40,7 +40,7 @@ See the [Installation Guide](docs/installation.md) for the complete setup. A cle
   bun tauri dev
   ```
 
-`uv` is only required for the Python model/services. Remote AI uses an OpenAI-compatible HTTP endpoint; Ollama, LM Studio, OpenRouter, OpenAI, and custom compatible servers are supported without vendor-specific client code.
+`uv` is only required for optional Python model/services. On desktop, Parlez-vous can set up its own private local AI runtime from Settings. Advanced users can instead connect an OpenAI-compatible endpoint such as Ollama, LM Studio, OpenRouter, OpenAI, vLLM, or llama.cpp.
 
 ### 2. Handwriting models (optional)
 
@@ -105,7 +105,7 @@ bun tauri ios build --debug --target aarch64-sim --no-sign --ci
 
 iOS currently uses server-backed OpenAI-compatible AI/ASR/TTS. LiteRT-LM and Supertonic on-device inference remain Android-only; their iOS bridges report those capabilities as unavailable without blocking the rest of the app.
 
-### 5. Optional AI helpers
+### 5. Optional service helpers
 - **Whisper ASR (speech-to-text):** run `docker compose up` inside `whisper/`.
 - **Qwen3 TTS (server text-to-speech):**
   ```bash
@@ -132,16 +132,22 @@ This project is licensed under the [MIT License](LICENSE).
 
 Parlez-vous integrates external machine learning models and 3D assets, which are subject to their own respective licensing terms. Users and developers of this application must comply with these terms:
 
-1. **Gemma 4** (`gemma-4-E2B-it`):
+1. **Qwen3.5 / Qwen3 Embeddings** (`Qwen3.5-4B`, `Qwen3-Embedding-0.6B`):
    - **License**: [Apache License 2.0](https://choosealicense.com/licenses/apache-2.0/)
-   - A permissive open-source license that allows commercial use, modification, distribution, and patent grants.
+   - Used by the managed desktop Express setup for language tutoring and textbook retrieval.
 
-2. **Supertonic TTS** (`supertonic-3`):
+2. **MiniCPM-V 4.6** (optional Vision capability):
+   - **License**: [Apache License 2.0](https://choosealicense.com/licenses/apache-2.0/)
+
+3. **Gemma 4** (`gemma-4-E2B-it`, Android LiteRT path):
+   - **License**: [Apache License 2.0](https://choosealicense.com/licenses/apache-2.0/)
+
+4. **Supertonic TTS** (`supertonic-3`):
    - **License**: [BigScience Open RAIL-M License](https://huggingface.co/spaces/bigscience/license)
    - A responsible AI license designed for open access while enforcing ethical downstream use restrictions.
    - **Important Use Restrictions**: The model must not be used for unlawful acts, harm to minors, generating disinformation, harassment/impersonation, automated legal decision-making, social scoring or discrimination, medical advice/interpretation, or certain law enforcement activities. Any redistribution or derivation of the model weights must carry these same use-based restrictions.
 
-3. **3D Assets** (`avatar.vrm`, `VRMA_*.vrma`):
+5. **3D Assets** (`avatar.vrm`, `VRMA_*.vrma`):
    - **License**: Proprietary terms dictated by pixiv Inc.'s VRoid Project.
    - You must include the following attribution in derivatives: "キャラクターアニメーション: ピクシブ株式会社 VRoidプロジェクト" (Character animation credits to pixiv Inc.'s VRoid Project).
    - Commercial use is allowed with credit. See VRoid Hub for full terms.

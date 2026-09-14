@@ -203,7 +203,8 @@ impl ChatProvider for LiteRtAdapter {
             };
 
             return Ok(ChatResponse {
-                response: response_text,
+                response: response_text.clone(),
+                response_parts: vec![response_text],
                 idealized_correction: None,
                 context_summary: context_summary.clone(),
             });

@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onDestroy, onMount } from 'svelte';
+    import AiGate from '$lib/components/AiGate.svelte';
     import { Plus } from 'lucide-svelte';
     import { settingsState } from '$lib/state/settings.svelte';
     import { timeTracker } from '$lib/state/timeTracker.svelte';
@@ -12,6 +13,7 @@
     onDestroy(() => { controller.dispose(); timeTracker.flushTime(); timeTracker.stopTracking(); });
 </script>
 
+<AiGate feature="Conjugation">
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <div bind:this={controller.pageEl} role="application" tabindex="0" onkeydown={controller.handlePageKeydown} class="app-page app-page--medium">
@@ -34,3 +36,4 @@
     .practice-layout { display:grid; gap:1.5rem; }
     @media (min-width:900px) { .practice-layout { grid-template-columns:minmax(0,1fr) 15rem; gap:2rem; align-items:start; } }
 </style>
+</AiGate>

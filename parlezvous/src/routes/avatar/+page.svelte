@@ -1,5 +1,6 @@
 <script lang="ts">
     import { invoke } from '@tauri-apps/api/core';
+    import AiGate from '$lib/components/AiGate.svelte';
     import { onDestroy, onMount } from 'svelte';
     import { CURRICULUM_TIERS, getTierFromXP } from '$lib/curriculum';
     import { settingsState } from '$lib/state/settings.svelte';
@@ -99,6 +100,7 @@
     });
 </script>
 
+<AiGate feature="Tutor">
 <div class="tutor-shell">
     {#if showReviewModal && reviewThemeCandidate}
         <ReviewModal theme={reviewThemeCandidate} onSkip={() => showReviewModal = false} onAccept={acceptReview} />
@@ -127,6 +129,7 @@
         />
     {/if}
 </div>
+</AiGate>
 
 <style>
     .tutor-shell { position:relative; display:flex; width:100%; height:100%; min-height:0; flex-direction:column; gap:.5rem; overflow:hidden; padding:.5rem; }

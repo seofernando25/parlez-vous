@@ -1,5 +1,6 @@
 <script lang="ts">
     import { invoke } from '@tauri-apps/api/core';
+    import AiGate from '$lib/components/AiGate.svelte';
     import { listen } from '@tauri-apps/api/event';
     import { onMount, onDestroy } from 'svelte';
     import { settingsState } from '$lib/state/settings.svelte.ts';
@@ -127,6 +128,7 @@
     }
 </script>
 
+<AiGate feature="Journal">
 <div class="app-page">
     <header class="page-heading">
         <div><h1 class="page-title">Journal</h1><p class="page-subtitle">{settingsState.targetLanguage} · {settingsState.skillLevel}</p></div>
@@ -176,6 +178,7 @@
         </section>
     </div>
 </div>
+</AiGate>
 
 <style>
     .mode-switch { display:flex; gap:.25rem; padding:.25rem; border:1px solid var(--pv-border); border-radius:.85rem; background:var(--pv-surface); }

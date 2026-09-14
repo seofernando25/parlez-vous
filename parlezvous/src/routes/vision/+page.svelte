@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onDestroy, onMount } from 'svelte';
+    import AiGate from '$lib/components/AiGate.svelte';
     import { invoke, convertFileSrc } from '@tauri-apps/api/core';
     import { ImagePlus, Send, RotateCcw, LoaderCircle } from 'lucide-svelte';
     import { settingsState, loadSettings } from '$lib/state/settings.svelte';
@@ -78,6 +79,7 @@
     }
 </script>
 
+<AiGate feature="Vision practice" capability="vision">
 <div class="app-page app-page--medium">
     <header class="page-heading"><h1 class="page-title">Vision</h1></header>
 
@@ -109,6 +111,7 @@
         </section>
     </div>
 </div>
+</AiGate>
 
 <style>
     .vision-layout { display:grid; gap:1rem; }

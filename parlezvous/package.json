@@ -12,7 +12,8 @@
     "tauri": "tauri",
     "test": "vitest run",
     "verify": "bun run check:loc && bun run check && bun run test && bun run build",
-    "check:loc": "bun scripts/check-loc.ts"
+    "check:loc": "bun scripts/check-loc.ts",
+    "eval:tutor": "cd src-tauri && cargo test ai::tutor::eval::local_teacher_quality_gate -- --ignored --nocapture"
   },
   "license": "MIT",
   "dependencies": {

@@ -61,6 +61,7 @@ export class AvatarChatController {
             const topic = await this.resolveTopic(context);
             const response = await invoke<{
                 response: string;
+                response_parts?: string[];
                 idealized_correction?: string;
                 context_summary?: string;
             }>('chat_with_avatar', {
@@ -74,13 +75,16 @@ export class AvatarChatController {
                 audioBase64: audioBase64 || null
             });
             await this.applyCorrection(userMessage, response.idealized_correction);
-            if (response.context_summary) await this.replaceWithSummary(userMessage, response.response, response.context_summary);
-            else await this.appendAssistant(response.response);
+            const parts = response.response_parts?.filter(Boolean).length
+                ? response.response_parts.filter(Boolean)
+                : [response.response];
+            if (response.context_summary) await this.replaceWithSummary(userMessage, parts, response.context_summary);
+            else await this.appendAssistantParts(parts);
             await this.scrollToBottom(true);
-            await this.speak(response.response);
+            for (const part of parts) await this.speak(part);
         } catch (error) {
             console.error('Chat failed:', error);
-            this.history = [...this.history, { role: 'assistant', content: `Sorry, I encountered an error. ${error}` }];
+            this.history = [...this.history, { role: 'assistant', content: `I couldn't answer that just now. Try again?` }];
         } finally {
             this.isChatting = false;
         }
@@ -105,11 +109,11 @@ export class AvatarChatController {
         }
     }
 
-    private async replaceWithSummary(user: AvatarChatMessage, response: string, summary: string) {
+    private async replaceWithSummary(user: AvatarChatMessage, parts: string[], summary: string) {
         this.history = [
             { role: 'system', content: `Context Compressed: ${summary}` },
             user,
-            { role: 'assistant', content: response }
+            ...parts.map(content => ({ role: 'assistant', content }))
         ];
         try {
             await invoke('clear_chat_history');
@@ -121,11 +125,13 @@ export class AvatarChatController {
         }
     }
 
-    private async appendAssistant(content: string) {
-        const message: AvatarChatMessage = { role: 'assistant', content };
-        this.history = [...this.history, message];
-        try { message.id = await this.persist(message); }
-        catch (error) { console.error('Failed to persist assistant chat message:', error); }
+    private async appendAssistantParts(parts: string[]) {
+        for (const content of parts) {
+            const message: AvatarChatMessage = { role: 'assistant', content };
+            this.history = [...this.history, message];
+            try { message.id = await this.persist(message); }
+            catch (error) { console.error('Failed to persist assistant chat message:', error); }
+        }
     }
 
     private persist(message: AvatarChatMessage) {

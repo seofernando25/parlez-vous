@@ -11,6 +11,39 @@ pub(crate) async fn list_ai_models(state: State<'_, AppState>) -> Result<Vec<Str
     state.router.remote().list_models().await
 }
 
+
+#[tauri::command]
+pub(crate) async fn get_managed_ai_status(
+    app: tauri::AppHandle,
+    runtime: State<'_, crate::services::managed_ai::ManagedAiRuntime>,
+) -> Result<crate::services::managed_ai::ManagedAiStatus, String> {
+    crate::services::managed_ai::status(&app, &runtime).await
+}
+
+#[tauri::command]
+pub(crate) async fn install_managed_ai(
+    app: tauri::AppHandle,
+    runtime: State<'_, crate::services::managed_ai::ManagedAiRuntime>,
+) -> Result<(), String> {
+    crate::services::managed_ai::install(&app, &runtime).await
+}
+
+#[tauri::command]
+pub(crate) fn start_managed_ai(
+    app: tauri::AppHandle,
+    runtime: State<'_, crate::services::managed_ai::ManagedAiRuntime>,
+) -> Result<(), String> {
+    crate::services::managed_ai::start(&app, &runtime)
+}
+
+#[tauri::command]
+pub(crate) async fn install_managed_vision(
+    app: tauri::AppHandle,
+    runtime: State<'_, crate::services::managed_ai::ManagedAiRuntime>,
+) -> Result<(), String> {
+    crate::services::managed_ai::install_vision(&app, &runtime).await
+}
+
 #[tauri::command]
 pub(crate) async fn get_settings(
     state: State<'_, AppState>,

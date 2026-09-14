@@ -78,6 +78,11 @@ pub async fn ingest_pdf(
     println!("[RAG] Extracted {} pages from PDF.", pages.len());
 
     let mut total_chunks = 0;
+    {
+        let conn = db.lock().map_err(|_| "Failed to lock database")?;
+        conn.execute("DELETE FROM document_chunks WHERE document_name = ?1", [&file_name])
+            .map_err(|error| error.to_string())?;
+    }
 
     for (page_idx, page_text) in pages.iter().enumerate() {
         let page_number = (page_idx + 1) as i32;
@@ -108,6 +113,7 @@ pub async fn ingest_pdf(
             // 4. Database Insertion
             let db_clone = db.clone();
             let file_name_clone = file_name.clone();
+            let embedding_model = model.clone();
 
             tokio::task::spawn_blocking(move || {
             let conn = db_clone.lock().map_err(|_| "Failed to lock database")?;
@@ -122,16 +128,8 @@ pub async fn ingest_pdf(
             };
 
             conn.execute(
-                "INSERT INTO document_chunks (document_name, chunk_text, page_number) VALUES (?1, ?2, ?3)",
-                rusqlite::params![file_name_clone, chunk, page_number],
-            )
-            .map_err(|e| e.to_string())?;
-
-            let rowid = conn.last_insert_rowid();
-
-            conn.execute(
-                "INSERT INTO vec_chunks (rowid, embedding) VALUES (?1, ?2)",
-                rusqlite::params![rowid, bytes],
+                "INSERT INTO document_chunks (document_name, chunk_text, page_number, embedding, embedding_dimensions, embedding_model) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+                rusqlite::params![file_name_clone, chunk, page_number, bytes, f32_vec.len() as i64, embedding_model],
             )
             .map_err(|e| e.to_string())?;
 
@@ -194,7 +192,9 @@ pub async fn query_context(
     };
 
     // Add Nomic prefix for queries
-    let embed_query = if model.contains("nomic") {
+    let embed_query = if model == "parlezvous-embed" || model.to_ascii_lowercase().contains("qwen3-embedding") {
+        format!("Instruct: Given a language-learning textbook query, retrieve relevant passages that answer or explain it\nQuery: {}", expanded_query)
+    } else if model.contains("nomic") {
         format!("search_query: {}", expanded_query)
     } else {
         expanded_query.clone()
@@ -202,14 +202,14 @@ pub async fn query_context(
     println!("Query: {}", embed_query.clone());
 
     // 1. Embed query
-    let embedding = ai.generate_embedding(embed_query, model).await?;
+    let embedding = ai.generate_embedding(embed_query, model.clone()).await?;
 
-    // 2. Retrieve top matching chunks
+    // 2. Retrieve matching chunks. Vector dimensions live with each row, so the
+    // schema is not coupled to one embedding family. We only compare rows produced
+    // by the selected model, which guarantees equal vector lengths for sqlite-vec.
     tokio::task::spawn_blocking(move || {
         let conn = db.lock().map_err(|_| "Failed to lock database")?;
-
-        // Convert to f32 bytes for sqlite-vec
-        let f32_vec: Vec<f32> = embedding.iter().map(|&x| x as f32).collect();
+        let f32_vec: Vec<f32> = embedding.iter().map(|&value| value as f32).collect();
         let bytes: &[u8] = unsafe {
             std::slice::from_raw_parts(
                 f32_vec.as_ptr() as *const u8,
@@ -217,44 +217,25 @@ pub async fn query_context(
             )
         };
 
-        // Weight the vector search so that if current_page is present, we boost its relevance,
-        // or strictly filter by it. Let's do a strict filter for exact page +/- 1 if current_page is set.
-        let mut query_sql = String::from(
-            "SELECT c.chunk_text
-             FROM document_chunks c
-             JOIN vec_chunks v ON v.rowid = c.id
-             WHERE v.rowid IN (SELECT id FROM document_chunks WHERE document_name = ?2",
+        let mut sql = String::from(
+            "SELECT chunk_text FROM document_chunks \
+             WHERE document_name = ?1 AND embedding_model = ?2 AND embedding_dimensions = ?4 AND embedding IS NOT NULL",
         );
-
         if let Some(page) = current_page {
-            query_sql.push_str(&format!(
-                " AND page_number BETWEEN {} AND {})",
+            sql.push_str(&format!(
+                " AND page_number BETWEEN {} AND {}",
                 page.saturating_sub(1).max(1),
                 page + 1
             ));
-        } else {
-            query_sql.push_str(")");
         }
+        sql.push_str(" ORDER BY vec_distance_cosine(embedding, ?3) ASC LIMIT 10");
 
-        query_sql.push_str(" AND v.embedding MATCH ?1 AND v.k = 10 ORDER BY v.distance");
-
-        let mut stmt = conn.prepare(&query_sql).map_err(|e| e.to_string())?;
-
+        let mut stmt = conn.prepare(&sql).map_err(|error| error.to_string())?;
         let rows = stmt
-            .query_map(rusqlite::params![bytes, document_name], |row| {
-                row.get::<_, String>(0)
-            })
-            .map_err(|e| e.to_string())?;
-
-        let mut results = Vec::new();
-        for row in rows {
-            if let Ok(text) = row {
-                results.push(text);
-            }
-        }
-
-        Ok(results)
+            .query_map(rusqlite::params![document_name, model, bytes, f32_vec.len() as i64], |row| row.get::<_, String>(0))
+            .map_err(|error| error.to_string())?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(|error| error.to_string())
     })
     .await
-    .map_err(|e| e.to_string())?
+    .map_err(|error| error.to_string())?
 }

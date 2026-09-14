@@ -43,6 +43,8 @@ pub struct ChatMessage {
 #[derive(serde::Serialize, serde::Deserialize, Debug, schemars::JsonSchema)]
 pub struct ChatResponse {
     pub response: String,
+    #[serde(default)]
+    pub response_parts: Vec<String>,
     pub idealized_correction: Option<String>,
     #[serde(default)]
     pub context_summary: Option<String>,
