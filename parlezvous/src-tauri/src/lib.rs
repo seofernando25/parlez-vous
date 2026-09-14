@@ -61,8 +61,8 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            commands::system::check_ollama_health,
-            commands::system::list_ollama_models,
+            commands::system::check_ai_health,
+            commands::system::list_ai_models,
             commands::profile::add_active_seconds,
             commands::profile::get_curriculum,
             commands::profile::add_time_xp,

@@ -2,7 +2,6 @@
     import { invoke } from '@tauri-apps/api/core';
     import { listen } from '@tauri-apps/api/event';
     import { onMount, onDestroy } from 'svelte';
-    import { ollamaState } from '$lib/state/ollama.svelte.ts';
     import { settingsState } from '$lib/state/settings.svelte.ts';
     import toast from 'svelte-french-toast';
     import { playSmartTTS } from '$lib/tts';

@@ -40,7 +40,7 @@ See the [Installation Guide](docs/installation.md) for the complete setup. A cle
   bun tauri dev
   ```
 
-`uv` is only required for the Python model/services, and Ollama is only required when using the Ollama-backed AI features.
+`uv` is only required for the Python model/services. Remote AI uses an OpenAI-compatible HTTP endpoint; Ollama, LM Studio, OpenRouter, OpenAI, and custom compatible servers are supported without vendor-specific client code.
 
 ### 2. Handwriting models (optional)
 
@@ -81,7 +81,7 @@ bun tauri android dev medium_phone --no-watch
 For emulator development, `adb reverse` can make the existing localhost defaults reach services on the Mac:
 
 ```bash
-adb reverse tcp:11434 tcp:11434 # Ollama
+adb reverse tcp:11434 tcp:11434 # example local AI endpoint (Ollama preset)
 adb reverse tcp:8000 tcp:8000   # Whisper ASR
 adb reverse tcp:5050 tcp:5050   # server TTS
 ```
@@ -103,7 +103,7 @@ Build an unsigned Apple-silicon simulator bundle with:
 bun tauri ios build --debug --target aarch64-sim --no-sign --ci
 ```
 
-iOS currently uses server-backed AI/ASR/TTS. LiteRT-LM and Supertonic on-device inference remain Android-only; their iOS bridges report those capabilities as unavailable without blocking the rest of the app.
+iOS currently uses server-backed OpenAI-compatible AI/ASR/TTS. LiteRT-LM and Supertonic on-device inference remain Android-only; their iOS bridges report those capabilities as unavailable without blocking the rest of the app.
 
 ### 5. Optional AI helpers
 - **Whisper ASR (speech-to-text):** run `docker compose up` inside `whisper/`.

@@ -6,7 +6,7 @@ pub use schema::SCHEMA_V1;
 
 use rusqlite::ffi::sqlite3_auto_extension;
 use rusqlite::Connection;
-use schema::{DB_VERSION_NUM, SCHEMA_V2, SCHEMA_V3, SCHEMA_V4, SCHEMA_V5, SCHEMA_V6, SCHEMA_V7, SCHEMA_V8, SCHEMA_V9};
+use schema::{DB_VERSION_NUM, SCHEMA_V2, SCHEMA_V3, SCHEMA_V4, SCHEMA_V5, SCHEMA_V6, SCHEMA_V7, SCHEMA_V8, SCHEMA_V9, SCHEMA_V10};
 use sqlite_vec::sqlite3_vec_init;
 use tauri::Manager;
 
@@ -43,7 +43,7 @@ fn apply_migrations(conn: &Connection) -> Result<(), String> {
         }
     }
 
-    let schemas = [SCHEMA_V1, SCHEMA_V2, SCHEMA_V3, SCHEMA_V4, SCHEMA_V5, SCHEMA_V6, SCHEMA_V7, SCHEMA_V8, SCHEMA_V9];
+    let schemas = [SCHEMA_V1, SCHEMA_V2, SCHEMA_V3, SCHEMA_V4, SCHEMA_V5, SCHEMA_V6, SCHEMA_V7, SCHEMA_V8, SCHEMA_V9, SCHEMA_V10];
     for (index, schema) in schemas.iter().enumerate().take(DB_VERSION_NUM) {
         if user_version != index as i32 { continue; }
         conn.execute_batch(schema).map_err(|error| error.to_string())?;
@@ -59,10 +59,10 @@ mod tests {
     use rusqlite::Connection;
 
     #[test]
-    fn upgrades_v7_through_current_profile_and_tts_defaults() {
+    fn upgrades_v7_through_current_provider_profile_and_tts_defaults() {
         let conn = Connection::open_in_memory().unwrap();
         conn.execute_batch(
-            "CREATE TABLE settings (id INTEGER PRIMARY KEY CHECK (id = 1));
+            "CREATE TABLE settings (id INTEGER PRIMARY KEY CHECK (id = 1), ollama_server_url TEXT NOT NULL DEFAULT 'http://localhost:11434');
              INSERT INTO settings (id) VALUES (1);
              CREATE TABLE user_profile (id INTEGER PRIMARY KEY CHECK (id = 1), skill_level TEXT NOT NULL DEFAULT 'Beginner', tier INTEGER NOT NULL DEFAULT 1, active_seconds INTEGER NOT NULL DEFAULT 0);
              INSERT INTO user_profile (id) VALUES (1);
@@ -70,11 +70,18 @@ mod tests {
         ).unwrap();
 
         apply_migrations(&conn).unwrap();
-        assert_eq!(conn.query_row("PRAGMA user_version", [], |row| row.get::<_, i32>(0)).unwrap(), 9);
+        assert_eq!(conn.query_row("PRAGMA user_version", [], |row| row.get::<_, i32>(0)).unwrap(), 10);
         let provider: String = conn.query_row("SELECT tts_provider FROM settings WHERE id = 1", [], |row| row.get(0)).unwrap();
         assert_eq!(provider, "auto");
         let name: String = conn.query_row("SELECT display_name FROM user_profile WHERE id = 1", [], |row| row.get(0)).unwrap_or_default();
         assert_eq!(name, "");
+        let (provider_name, base_url, api_key): (String, String, String) = conn.query_row(
+            "SELECT ai_provider, ai_base_url, ai_api_key FROM settings WHERE id = 1", [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        ).unwrap();
+        assert_eq!(provider_name, "ollama");
+        assert_eq!(base_url, "http://localhost:11434/v1");
+        assert_eq!(api_key, "");
         apply_migrations(&conn).unwrap();
     }
 }

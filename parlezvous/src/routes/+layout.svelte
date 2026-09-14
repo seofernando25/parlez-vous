@@ -3,7 +3,7 @@
     import { onMount } from 'svelte';
     import { page } from '$app/stores';
     import { Toaster } from 'svelte-french-toast';
-    import { checkOllamaHealth } from '$lib/state/ollama.svelte';
+    import { checkAiHealth } from '$lib/state/aiProvider.svelte';
     import { loadSettings } from '$lib/state/settings.svelte';
     import { loadProfile } from '$lib/state/profile.svelte';
     import { loadTheme } from '$lib/state/theme.svelte';
@@ -20,7 +20,7 @@
         startNotificationTicker();
         void (async () => {
             await Promise.all([loadSettings(), loadProfile()]);
-            await checkOllamaHealth();
+            await checkAiHealth();
         })();
     });
 </script>

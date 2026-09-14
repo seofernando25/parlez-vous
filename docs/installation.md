@@ -84,7 +84,7 @@ bun tauri android dev medium_phone --no-watch
 Tauri forwards the frontend dev port. To let the emulator use the existing `localhost` defaults for host AI services, reverse the service ports as needed:
 
 ```bash
-adb reverse tcp:11434 tcp:11434  # Ollama
+adb reverse tcp:11434 tcp:11434  # example local AI endpoint (Ollama preset)
 adb reverse tcp:8000 tcp:8000    # Whisper-compatible ASR
 adb reverse tcp:5050 tcp:5050    # OpenAI-compatible TTS
 ```
@@ -159,7 +159,7 @@ cd parlezvous
 bun tauri ios build --debug --target aarch64-sim --no-sign --ci
 ```
 
-The initial iOS port intentionally uses the existing server-backed Ollama/ASR/TTS paths. The custom LiteRT and Supertonic plugins include Swift bridge packages so the app builds and launches, but their on-device model capabilities report unavailable on iOS until native Apple implementations are added.
+The initial iOS port intentionally uses server-backed OpenAI-compatible AI/ASR/TTS paths. The custom LiteRT and Supertonic plugins include Swift bridge packages so the app builds and launches, but their on-device model capabilities report unavailable on iOS until native Apple implementations are added.
 
 ---
 
@@ -233,24 +233,32 @@ Desktop playback always uses the configured server. The TTS policy is persisted 
 
 ---
 
-## 4. Local Large Language Models (LLM)
+## 4. AI Model Providers
 
-The conversational tutor and journaling grading engine can run on local computers or on-device on mobile:
+Remote generation uses one OpenAI-compatible transport rather than vendor-specific SDKs. In **Settings → AI & Speech**, choose a preset or enter a custom endpoint:
 
-### Option A: Server-Based LLM using Ollama (Desktop & local-network Mobile)
-1. Install Ollama from [ollama.ai](https://ollama.ai).
-2. Run your preferred model (we recommend `gemma-4-E2B-it` or similar capability instruct model):
-   ```bash
-   ollama run gemma-4-E2B-it
-   ```
-* **Desktop Setup:** Connects automatically to `http://localhost:11434` (default).
-* **Mobile Setup:** You can connect the mobile client to the Ollama server running on your host computer by updating the Ollama Server URL in the settings to your local network IP (e.g., `http://192.168.1.50:11434`). Make sure to launch Ollama with the environment variable `OLLAMA_HOST=0.0.0.0` so it accepts network connections.
+| Preset | Default API root |
+| --- | --- |
+| Ollama | `http://localhost:11434/v1` |
+| LM Studio | `http://localhost:1234/v1` |
+| OpenRouter | `https://openrouter.ai/api/v1` |
+| OpenAI | `https://api.openai.com/v1` |
+| OpenAI-compatible | user-supplied |
 
-### Option B: Local On-Device LLM using Google LiteRT (Mobile / Offline)
-To support fully offline, private chat and journaling on mobile devices:
-1. The Android client features the **Google LiteRT** (TensorFlow Lite) plugin.
-2. Enter your HuggingFace Access Token in the app settings panel.
-3. Use the in-app download buttons to download the `gemma-4-E2B-it.litertlm` model file and tokenizer directly to your phone.
-4. The application will automatically route chat, journal, conjugation, and puzzle generation through the on-device model while it is selected.
+The custom option is appropriate for compatible vLLM/llama.cpp servers, ModelScope-served endpoints, gateways, and other services that implement the same API. Add an API key when the service requires bearer authentication. Model discovery uses `/v1/models`, but the model field is always editable so endpoints without a model catalog still work.
 
-> **RAG note:** textbook PDF retrieval still uses an `EmbeddingProvider` backed by Ollama. LiteRT chat itself can be offline, but textbook ingestion/search currently requires a reachable Ollama embedding service (for example through `adb reverse tcp:11434 tcp:11434` on the emulator).
+For Ollama, for example:
+
+```bash
+ollama run gemma3:4b
+```
+
+Then use `http://localhost:11434/v1`. On a physical phone, replace localhost with a reachable LAN address. On an Android emulator, `adb reverse tcp:11434 tcp:11434` can preserve the localhost default.
+
+### Local On-Device LLM using Google LiteRT (Android)
+
+1. Enter a Hugging Face access token in Settings if the model download requires one.
+2. Download the `gemma-4-E2B-it.litertlm` model/tokenizer from the on-device AI section.
+3. Select the `.litertlm` model. `AiRouter` routes that model to native LiteRT; all other model names use the configured OpenAI-compatible endpoint.
+
+> **RAG note:** textbook PDF retrieval uses the same configured remote endpoint's `/v1/embeddings` capability. The current sqlite-vec index is `float[768]`, so the embedding model must support requesting/returning 768 dimensions. Fully offline Android RAG still requires a future on-device embedding provider.

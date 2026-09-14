@@ -3,7 +3,7 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import toast from 'svelte-french-toast';
 import { getThemes } from '$lib/coding/utils';
 import { loadNotificationSettings } from '$lib/services/notifications.svelte';
-import { fetchOllamaModels } from '$lib/state/ollama.svelte';
+import { fetchAiModels } from '$lib/state/aiProvider.svelte';
 import { loadSettings, saveSettings } from '$lib/state/settings.svelte';
 import { isAndroidTauri } from '$lib/platform';
 
@@ -26,7 +26,7 @@ export class SettingsController {
         this.isAndroid = isAndroidTauri();
         loadNotificationSettings();
         await loadSettings();
-        await Promise.all([fetchOllamaModels(), this.checkLitert(), this.checkSupertonic(), this.checkTokenizer()]);
+        await Promise.all([fetchAiModels(), this.checkLitert(), this.checkSupertonic(), this.checkTokenizer()]);
         getThemes().then(themes => this.codingCategories = Object.keys(themes))
             .catch(error => console.error('Failed to load coding themes', error));
         this.unlisteners = [

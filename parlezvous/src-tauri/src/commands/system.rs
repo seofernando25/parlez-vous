@@ -1,16 +1,14 @@
-use crate::{ai::ModelProvider, AppState};
+use crate::AppState;
 use tauri::{Manager, State};
 
 #[tauri::command]
-pub(crate) async fn check_ollama_health(state: State<'_, AppState>) -> Result<bool, String> {
-    println!("[IPC] check_ollama_health called");
-    Ok(state.router.ollama().check_health().await)
+pub(crate) async fn check_ai_health(state: State<'_, AppState>) -> Result<bool, String> {
+    Ok(state.router.remote().check_health().await)
 }
 
 #[tauri::command]
-pub(crate) async fn list_ollama_models(state: State<'_, AppState>) -> Result<Vec<String>, String> {
-    println!("[IPC] list_ollama_models called");
-    state.router.ollama().list_models().await
+pub(crate) async fn list_ai_models(state: State<'_, AppState>) -> Result<Vec<String>, String> {
+    state.router.remote().list_models().await
 }
 
 #[tauri::command]

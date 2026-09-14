@@ -1,5 +1,5 @@
-pub mod ollama_adapter;
-mod ollama;
+pub mod openai_compat_adapter;
+mod openai_compat;
 #[cfg(target_os = "android")]
 pub mod litert_adapter;
 #[cfg(target_os = "android")]

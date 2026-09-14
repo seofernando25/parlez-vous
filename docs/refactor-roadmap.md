@@ -10,8 +10,8 @@ SvelteKit UI
   │                ├─ AiRouter
   │                │   ├─ generation requests
   │                │   │   ├─ *.litertlm on Android -> lazy LiteRtAdapter
-  │                │   │   └─ everything else -> OllamaAdapter
-  │                │   └─ embeddings -> OllamaAdapter
+  │                │   │   └─ everything else -> OpenAiCompatibleAdapter
+  │                │   └─ embeddings -> OpenAiCompatibleAdapter
   │                ├─ SQLite + sqlite-vec
   │                ├─ RAG: PDF -> chunks -> embeddings -> vector search
   │                └─ TtsProvider
@@ -36,8 +36,8 @@ Major decomposition boundaries now include:
 - Avatar orchestration split into chat, voice capture, VRM stage/TTS, textbook, handwriting, and small view components;
 - Settings split into a controller plus focused settings sections;
 - shared handwriting rasterization reused by Avatar and Alphabet practice;
-- AI contracts separated into provider capabilities, prompt families, context management, and provider-specific implementations;
-- Ollama and LiteRT implementations organized by capability (`model`, `journal`, `chat`, `conjugation`, `puzzles`, and embeddings where supported);
+- AI contracts separated into provider capabilities, prompt families, context management, and transport/native implementations;
+- one OpenAI-compatible remote adapter handles model discovery, chat, structured generation, multimodal images, and embeddings; LiteRT remains the Android-native provider;
 - Supertonic split into text processing, chunking, synthesis, model/style loading, audio I/O, configuration, and thermal topology/policy;
 - Android LiteRT split into a thin Tauri plugin bridge, runtime/session manager, model downloads, gallery handling, and argument types.
 
@@ -45,11 +45,11 @@ The intent is not small files for their own sake: each file should have one stab
 
 ### Runtime AI routing
 
-AI generation is no longer frozen to one provider at Tauri startup. `AiRouter` resolves the provider from the model on each request. Switching between an Ollama model and a `.litertlm` model therefore takes effect without restarting the app.
+AI generation is no longer frozen to one provider at Tauri startup. `AiRouter` routes `.litertlm` models to Android LiteRT and everything else to the saved OpenAI-compatible endpoint. Changing remote presets/endpoints takes effect without rebuilding provider code.
 
 LiteRT instances are created lazily on Android and are recreated if the LiteRT model/accelerator/token-limit configuration changes.
 
-Embedding generation is a separate `EmbeddingProvider` capability. RAG uses Ollama embeddings even when chat is running through LiteRT, because the current LiteRT adapter intentionally does not implement embeddings.
+Embedding generation is a separate `EmbeddingProvider` capability. RAG uses the configured OpenAI-compatible `/v1/embeddings` endpoint even when chat runs through LiteRT; LiteRT does not currently implement embeddings.
 
 The frontend now centralizes model capability decisions in `src/lib/ai/capabilities.ts` rather than scattering `model.includes("litert")` checks across chat, audio, and puzzle generation.
 
@@ -82,7 +82,7 @@ The app was built, installed, and launched on an ARM64 Android API 36 emulator (
 
 The first Android cross-compile is large; subsequent builds reuse the Rust/Gradle caches and are substantially faster.
 
-The initial iOS scaffold is also checked in and verified on an ARM64 iOS simulator with Xcode 26.6. `bun tauri ios build --debug --target aarch64-sim --no-sign --ci` produces a launchable simulator bundle. iOS uses server-backed generation and speech for now; the LiteRT and Supertonic Swift bridges expose capability-unavailable stubs until native Apple inference is implemented.
+The initial iOS scaffold is also checked in and verified on an ARM64 iOS simulator with Xcode 26.6. `bun tauri ios build --debug --target aarch64-sim --no-sign --ci` produces a launchable simulator bundle. iOS uses server-backed OpenAI-compatible generation and speech for now; the LiteRT and Supertonic Swift bridges expose capability-unavailable stubs until native Apple inference is implemented.
 
 Android debug packaging also strips Rust DWARF symbols in the generated build task (opt out with `PARLEZVOUS_KEEP_ANDROID_SYMBOLS=1`). The final verified ARM64 debug APK is about 140.6 MB instead of the ~575 MB compressed payload produced when the 483 MiB unstripped Rust library was packaged; the stripped Rust library is ~73.9 MiB. Duplicate generated Cyrillic ONNX assets were removed because Burn embeds the compiled model in the Rust library. The runtime Burn dependency disables its default feature set and enables only `std` + `ndarray`; `burn-store` is likewise limited to `std` + Burnpack instead of pulling PyTorch/safetensors loaders.
 
@@ -97,11 +97,11 @@ The UI now uses:
 - seven curriculum tier tokens on an evenly stepped hue progression;
 - System, Light, and Dark appearance modes persisted locally;
 - reduced-motion behavior and semantic focus/selection colors;
-- a five-slot mobile primary navigation (`Journal`, `Cards`, `Tutor`, `Map`, `More`) instead of horizontally clipping all routes into one bar.
+- a five-icon mobile primary navigation (`Learn`, `Journal`, `Tutor`, `Practice`, `Profile`) and a collapsible desktop sidebar with account/settings separated from learning destinations.
 
 ## Remaining high-value work
 
-- **Offline RAG embeddings:** LiteRT generation is now capability-routed, but textbook ingestion/search still uses the Ollama `EmbeddingProvider`. Fully offline Android RAG needs an on-device embedding provider and an embedding-model lifecycle separate from chat models.
+- **Offline RAG embeddings:** textbook ingestion/search uses the remote compatibility endpoint. Fully offline Android RAG still needs an on-device embedding provider and a separate embedding-model lifecycle. The current local vector index is fixed at 768 dimensions.
 - **VRM distribution:** the two public VRM files still total roughly 47 MB. The accidental second hashed Vite copy is gone, but the remaining avatars should eventually be compressed or installed/downloaded on demand rather than shipped in every static distribution.
 - **Native build debt:** the Android build is green, but upstream Tauri/Gradle code still emits deprecation notices. These should be handled during a deliberate Tauri/Gradle upgrade rather than mixed into application refactors.
 - **Broader behavior coverage:** TTS provider routing, chat correction persistence, and the v7→v8 settings migration now have direct regression tests, and the Android artifact is smoke-tested. The next testing step is controller-level interaction coverage for the larger learning flows.
@@ -115,7 +115,7 @@ AiRouter
   ├─ ChatProvider
   ├─ ConjugationProvider
   ├─ PuzzleProvider
-  └─ EmbeddingProvider (currently Ollama)
+  └─ EmbeddingProvider (OpenAI-compatible remote endpoint)
 
 Media
   ├─ VoiceCaptureController -> Speech-to-text / multimodal audio

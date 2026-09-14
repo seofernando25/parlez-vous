@@ -271,4 +271,17 @@ pub const SCHEMA_V9: &str = "
     PRAGMA user_version = 9;
 ";
 
-pub const DB_VERSION_NUM: usize = 9;
+pub const SCHEMA_V10: &str = "
+    ALTER TABLE settings ADD COLUMN ai_provider TEXT NOT NULL DEFAULT 'ollama';
+    ALTER TABLE settings ADD COLUMN ai_base_url TEXT NOT NULL DEFAULT '';
+    ALTER TABLE settings ADD COLUMN ai_api_key TEXT NOT NULL DEFAULT '';
+    UPDATE settings
+    SET ai_base_url = CASE
+        WHEN rtrim(ollama_server_url, '/') LIKE '%/v1' THEN rtrim(ollama_server_url, '/')
+        ELSE rtrim(ollama_server_url, '/') || '/v1'
+    END
+    WHERE ai_base_url = '';
+    PRAGMA user_version = 10;
+";
+
+pub const DB_VERSION_NUM: usize = 10;

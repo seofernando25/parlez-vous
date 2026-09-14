@@ -17,7 +17,7 @@ describe('model capabilities', () => {
         });
 
         expect(getModelCapabilities('gemma4-context:latest')).toMatchObject({
-            provider: 'ollama',
+            provider: 'remote',
             isOnDevice: false,
             acceptsAudio: false,
             supportsKeystonePuzzles: true

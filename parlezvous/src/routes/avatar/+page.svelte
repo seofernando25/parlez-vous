@@ -15,8 +15,10 @@
     import ReviewModal from '$lib/avatar/components/ReviewModal.svelte';
     import TextbookViewport from '$lib/avatar/components/TextbookViewport.svelte';
     import ViewModeControls from '$lib/avatar/components/ViewModeControls.svelte';
+    import { panesForViewMode } from '$lib/avatar/view-mode';
 
     let viewMode = $state<ViewMode>('split');
+    let panes = $derived(panesForViewMode(viewMode));
     let mapFollowMode = $state(true);
     let muteTts = $state(false);
     let activeThemeId = $state<string | null>(null);
@@ -108,7 +110,7 @@
         <div class="tutor-loading"><div class="h-9 w-9 animate-spin rounded-full border-2 border-accent border-t-transparent"></div></div>
     {/if}
 
-    <div class="stage-column {viewMode === 'avatar' ? 'avatar-only' : handwriting.show ? 'handwriting-open' : ''} {viewMode === 'chat' ? 'hidden' : ''}">
+    <div class="stage-column {viewMode === 'avatar' ? 'avatar-only' : handwriting.show ? 'handwriting-open' : ''}" class:pane-hidden={!panes.stage}>
         <AvatarStagePanel
             {stage} {voice} {viewMode}
             isChatting={chat.isChatting}
@@ -117,17 +119,20 @@
         <TextbookViewport {textbooks} />
     </div>
 
-    <ChatPanel
-        {chat} {voice} {handwriting} {textbooks} {viewMode} {mapFollowMode} {muteTts}
-        onToggleMap={() => mapFollowMode = !mapFollowMode}
-        onToggleMute={() => muteTts = !muteTts}
-    />
+    {#if panes.chat}
+        <ChatPanel
+            {chat} {voice} {handwriting} {textbooks} {viewMode} {mapFollowMode} {muteTts}
+            onToggleMap={() => mapFollowMode = !mapFollowMode}
+            onToggleMute={() => muteTts = !muteTts}
+        />
+    {/if}
 </div>
 
 <style>
     .tutor-shell { position:relative; display:flex; width:100%; height:100%; min-height:0; flex-direction:column; gap:.5rem; overflow:hidden; padding:.5rem; }
     .stage-column { display:flex; min-width:0; min-height:0; height:40vh; flex:0 0 auto; flex-direction:column; gap:.5rem; transition:height 180ms ease; }
     .stage-column.avatar-only { height:100%; flex:1; }
+    .pane-hidden { display:none !important; }
     .stage-column.handwriting-open { height:22vh; }
     .tutor-view-control { position:absolute; z-index:30; top:.55rem; left:50%; transform:translateX(-50%); }
     .tutor-loading { position:absolute; inset:0; z-index:40; display:grid; place-items:center; background:color-mix(in oklch,var(--pv-canvas) 78%,transparent); backdrop-filter:blur(8px); }

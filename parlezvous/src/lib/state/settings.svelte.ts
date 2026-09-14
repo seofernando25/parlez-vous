@@ -5,7 +5,9 @@ export const settingsState = $state({
     targetLanguage: 'Korean',
     ttsServerUrl: 'http://localhost:5050/v1/audio/speech',
     asrServerUrl: 'http://localhost:8000/v1/audio/transcriptions',
-    ollamaServerUrl: 'http://localhost:11434',
+    aiProvider: 'ollama',
+    aiBaseUrl: 'http://localhost:11434/v1',
+    aiApiKey: '',
     embeddingModel: 'nomic-embed-text-v2-moe:latest',
     activeModel: 'gemma4-context:latest',
     skillLevel: 'Beginner',
@@ -22,11 +24,13 @@ export const settingsState = $state({
 
 export async function loadSettings() {
     try {
-        const settings = await invoke<{ target_language: string, tts_server_url: string, asr_server_url: string, ollama_server_url: string, embedding_model: string, active_model: string, huggingface_token: string | null, litert_accelerator: string, litert_max_tokens: number, target_programming_language: string, coding_theme_category: string, active_vrm: string, supertonic_voice_style: string, tts_provider: TtsProviderPolicy }>('get_settings');
+        const settings = await invoke<{ target_language: string, tts_server_url: string, asr_server_url: string, ai_provider: string, ai_base_url: string, ai_api_key: string, embedding_model: string, active_model: string, huggingface_token: string | null, litert_accelerator: string, litert_max_tokens: number, target_programming_language: string, coding_theme_category: string, active_vrm: string, supertonic_voice_style: string, tts_provider: TtsProviderPolicy }>('get_settings');
         settingsState.targetLanguage = settings.target_language;
         settingsState.ttsServerUrl = settings.tts_server_url;
         settingsState.asrServerUrl = settings.asr_server_url;
-        settingsState.ollamaServerUrl = settings.ollama_server_url;
+        settingsState.aiProvider = settings.ai_provider || 'ollama';
+        settingsState.aiBaseUrl = settings.ai_base_url || 'http://localhost:11434/v1';
+        settingsState.aiApiKey = settings.ai_api_key || '';
         settingsState.embeddingModel = settings.embedding_model;
         settingsState.activeModel = settings.active_model;
         settingsState.huggingFaceToken = settings.huggingface_token || '';
@@ -56,7 +60,9 @@ export async function saveSettings() {
                 target_language: settingsState.targetLanguage,
                 tts_server_url: settingsState.ttsServerUrl,
                 asr_server_url: settingsState.asrServerUrl,
-                ollama_server_url: settingsState.ollamaServerUrl,
+                ai_provider: settingsState.aiProvider,
+                ai_base_url: settingsState.aiBaseUrl,
+                ai_api_key: settingsState.aiApiKey,
                 embedding_model: settingsState.embeddingModel,
                 active_model: settingsState.activeModel,
                 huggingface_token: settingsState.huggingFaceToken.trim() !== '' ? settingsState.huggingFaceToken : null,

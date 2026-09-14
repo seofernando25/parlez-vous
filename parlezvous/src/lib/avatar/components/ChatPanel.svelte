@@ -29,7 +29,7 @@
     }
 </script>
 
-<div class="chat-panel {handwriting.show ? 'handwriting-open' : ''} {viewMode === 'avatar' ? 'hidden' : ''} {viewMode === 'chat' ? 'chat-only' : ''}">
+<div class="chat-panel {handwriting.show ? 'handwriting-open' : ''} {viewMode === 'chat' ? 'chat-only' : ''}">
     <div class="chat-toolbar">
         <div class="toolbar-spacer"></div>
         <div class="toolbar-actions">
@@ -70,7 +70,6 @@
 
 <style>
     .chat-panel { position:relative; display:flex; min-width:0; min-height:0; flex:1; flex-direction:column; overflow:hidden; border:1px solid var(--pv-border); border-radius:1rem; background:var(--pv-surface); }
-    .chat-panel.hidden { display:none; }
     .chat-toolbar { display:flex; flex:0 0 auto; align-items:center; justify-content:space-between; gap:.5rem; padding:.55rem; border-bottom:1px solid var(--pv-border); }
     .toolbar-spacer { flex:1; }
     .toolbar-actions { display:flex; align-items:center; gap:.15rem; }

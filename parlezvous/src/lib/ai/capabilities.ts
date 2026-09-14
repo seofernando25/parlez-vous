@@ -1,4 +1,4 @@
-export type ModelProvider = 'ollama' | 'litert';
+export type ModelProvider = 'remote' | 'litert';
 
 export interface ModelCapabilities {
     provider: ModelProvider;
@@ -24,7 +24,7 @@ export function getModelCapabilities(model: string): ModelCapabilities {
     }
 
     return {
-        provider: 'ollama',
+        provider: 'remote',
         isOnDevice: false,
         acceptsAudio: false,
         acceptsImage: false,
