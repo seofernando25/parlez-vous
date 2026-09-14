@@ -53,7 +53,7 @@ Embedding generation is a separate `EmbeddingProvider` capability. Desktop manag
 
 Desktop Express setup now installs a managed llama.cpp runtime, Qwen3.5-4B as the quality-gated multilingual teacher, and Qwen3-Embedding-0.6B for local textbook retrieval. Vision remains an optional MiniCPM-V capability. AI-dependent screens are readiness-gated so an unconfigured model never surfaces as a raw generation error.
 
-Tutor conversation is a small pipeline rather than one overloaded system prompt: task routing, exact low-temperature language work, optional correction, and short conversational presentation are separate responsibilities. Literal bubble formatting and curated false-friend drills are deterministic.
+Tutor conversation is a small pipeline rather than one overloaded system prompt: deterministic fast-routing handles obvious translation/conjugation/format requests, the model analyzes ambiguous turns, exact low-temperature language work is separated from optional correction, and conversational output is normalized into short deduplicated bubbles. Literal bubble formatting and curated false-friend drills are deterministic.
 
 The frontend now centralizes model capability decisions in `src/lib/ai/capabilities.ts` rather than scattering `model.includes("litert")` checks across chat, audio, and puzzle generation.
 

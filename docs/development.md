@@ -82,4 +82,6 @@ cd parlezvous
 bun run eval:tutor
 ```
 
-This is intentionally an ignored model acceptance test rather than a normal CI test because it requires the multi-gigabyte managed model. Keep ordinary unit/integration tests deterministic; use the tutor gate when changing tutor prompts, orchestration, model manifests, or llama.cpp inference settings.
+This is intentionally an ignored model acceptance test rather than a normal CI test because it requires the multi-gigabyte managed model. It covers short-answer cadence, exact five-bubble formatting, correction, false-premise handling, Portuguese false friends, and present-tense morphology across French, Portuguese, Spanish, Italian, and German. Keep ordinary unit/integration tests deterministic; use the tutor gate when changing tutor prompts, orchestration, model manifests, or llama.cpp inference settings.
+
+Model size is not allowed to override this gate. Smaller candidates are useful experiments, but a candidate only becomes the Express default after it passes the same suite; current 2B candidates did not reliably clear correction/multilingual checks, so the managed teacher remains Qwen3.5-4B.

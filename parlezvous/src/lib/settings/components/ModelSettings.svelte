@@ -31,25 +31,34 @@
             {#each AI_PROVIDER_PRESETS as provider}<option value={provider.id}>{provider.label}</option>{/each}
         </select>
     </div>
-    <div class="settings-row">
-        <label for="ai-base-url">Endpoint</label>
-        <input id="ai-base-url" class="settings-field" bind:value={settingsState.aiBaseUrl} onchange={endpointChanged} spellcheck="false" />
-    </div>
-    <div class="settings-row">
-        <label for="ai-api-key">API key</label>
-        <input id="ai-api-key" type="password" class="settings-field" bind:value={settingsState.aiApiKey} onchange={credentialsChanged} placeholder="Optional for local servers" autocomplete="off" />
-    </div>
-    <div class="settings-row">
-        <label for="active-model">Model</label>
-        <div class="model-field">
-            <input id="active-model" class="settings-field" list="ai-models" bind:value={settingsState.activeModel} onchange={onSave} spellcheck="false" />
-            <datalist id="ai-models">
-                {#if isAndroid}<option value="gemma-4-E2B-it.litertlm">On-device Gemma</option>{/if}
-                {#each aiProviderState.models as model}<option value={model}></option>{/each}
-            </datalist>
-            <button class="icon-button" type="button" onclick={fetchAiModels} title="Refresh models" aria-label="Refresh models"><RefreshCw size={16} /></button>
+
+    {#if settingsState.aiProvider === 'managed' && !isAndroid}
+        <div class="settings-row">
+            <span>Local runtime</span>
+            <span class="managed-value">Managed automatically</span>
         </div>
-    </div>
+    {:else}
+        <div class="settings-row">
+            <label for="ai-base-url">Endpoint</label>
+            <input id="ai-base-url" class="settings-field" bind:value={settingsState.aiBaseUrl} onchange={endpointChanged} spellcheck="false" />
+        </div>
+        <div class="settings-row">
+            <label for="ai-api-key">API key</label>
+            <input id="ai-api-key" type="password" class="settings-field" bind:value={settingsState.aiApiKey} onchange={credentialsChanged} placeholder="Optional for local servers" autocomplete="off" />
+        </div>
+        <div class="settings-row">
+            <label for="active-model">Model</label>
+            <div class="model-field">
+                <input id="active-model" class="settings-field" list="ai-models" bind:value={settingsState.activeModel} onchange={onSave} spellcheck="false" />
+                <datalist id="ai-models">
+                    {#if isAndroid}<option value="gemma-4-E2B-it.litertlm">On-device Gemma</option>{/if}
+                    {#each aiProviderState.models as model}<option value={model}></option>{/each}
+                </datalist>
+                <button class="icon-button" type="button" onclick={fetchAiModels} title="Refresh models" aria-label="Refresh models"><RefreshCw size={16} /></button>
+            </div>
+        </div>
+    {/if}
+
     {#if isAndroid}
         <div class="settings-row">
             <label for="tts-provider">Speech</label>
@@ -68,4 +77,5 @@
 
 <style>
     .model-field { display:grid; grid-template-columns:minmax(0,1fr) 2.5rem; gap:.45rem; align-items:center; }
+    .managed-value { color:var(--pv-muted); font-size:.8rem; text-align:right; }
 </style>

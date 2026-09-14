@@ -237,7 +237,7 @@ Desktop playback always uses the configured server. The canonical settings schem
 
 ### Recommended desktop setup
 
-Parlez-vous can manage its own local AI runtime. Open **Settings → AI & Speech** and choose **Set up** under Local AI. The app downloads a prebuilt llama.cpp runtime plus recommended chat and embedding models into its own application-data directory, then starts them behind a localhost OpenAI-compatible endpoint. Users do not need to install Ollama, LM Studio, Python, CUDA tooling, or understand GGUF files.
+Parlez-vous offers an AI setup screen with two deliberate paths. **Express** installs a private local runtime and tested models automatically; **Advanced** connects an existing LM Studio, Ollama, OpenRouter, OpenAI, or other compatible endpoint. Normal learners do not need to install Python/CUDA tooling or understand GGUF/model ids.
 
 The managed bundle currently uses:
 
@@ -247,13 +247,13 @@ The managed bundle currently uses:
 
 The Express install is about **3.5 GB**. Vision is intentionally separate: opening Vision practice offers an optional MiniCPM-V 4.6 add-on instead of making every learner download multimodal weights.
 
-Only one managed model is kept loaded at a time to reduce memory pressure. Apple silicon uses llama.cpp's native macOS build; Windows and Linux use broad prebuilt desktop bundles. The tutor model is selected by a local quality gate rather than exposed as a normal-user setting.
+The managed router keeps at most two model slots warm so chat and textbook retrieval do not constantly reload each other, while still bounding memory use. Apple silicon uses llama.cpp's native macOS build; Windows and Linux use broad prebuilt desktop bundles. The tutor model is selected by a local quality gate rather than exposed as a normal-user setting.
 
 AI-dependent screens are readiness-gated. If Local AI has not been installed, Tutor, Journal, Vision, Conjugation, Sprint, and Code show a setup state instead of attempting a request and surfacing a runtime/model error. Non-AI learning tools remain immediately usable.
 
 ### External or advanced AI
 
-Advanced users can switch **Settings → Advanced** to another OpenAI-compatible endpoint. These presets use the same transport rather than separate backend implementations:
+During setup, choose **Advanced** to connect an existing OpenAI-compatible endpoint without seeing unrelated application settings. After onboarding, the same provider/endpoint/model controls remain available under **Settings → Advanced**. These presets use one transport rather than separate backend implementations:
 
 | Preset | Default API root |
 | --- | --- |

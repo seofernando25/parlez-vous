@@ -63,11 +63,15 @@ impl OpenAiCompatibleAdapter {
             });
         }
 
-        let analysis: TurnAnalysis = self.generate_json_tuned(
-            &model, vec![text_message("user", analysis_prompt(&language, &skill_level, &recent, latest))],
-            120, 20, Some(0.0),
-        ).await?;
-        let analysis = stabilize_analysis(analysis, latest);
+        let analysis = if let Some(analysis) = fast_analysis(latest) {
+            analysis
+        } else {
+            let analysis: TurnAnalysis = self.generate_json_tuned(
+                &model, vec![text_message("user", analysis_prompt(&language, &skill_level, &recent, latest))],
+                120, 20, Some(0.0),
+            ).await?;
+            stabilize_analysis(analysis, latest)
+        };
         #[cfg(test)]
         eprintln!("[Tutor trace] analysis={analysis:?}");
 
@@ -168,6 +172,38 @@ fn literal_bubble_request(user: &str) -> Option<Vec<String>> {
         .filter(|part| !part.is_empty())
         .collect();
     if (1..=5).contains(&parts.len()) { Some(parts) } else { None }
+}
+
+fn fast_analysis(user: &str) -> Option<TurnAnalysis> {
+    let lower = user.trim().to_ascii_lowercase();
+    if let Some(term) = explicit_meaning_term(user, &lower) {
+        return Some(TurnAnalysis {
+            intent: "translate".to_string(),
+            task: format!("Translate the target-language term '{term}' into English and give only its natural meaning."),
+            factual: false, check_correction: false,
+        });
+    }
+    if lower.starts_with("conjugate ") || lower.starts_with("please conjugate ") {
+        return Some(TurnAnalysis {
+            intent: "conjugate".to_string(), task: user.trim().to_string(),
+            factual: false, check_correction: false,
+        });
+    }
+    if lower.starts_with("translate ") || lower.starts_with("how do i say ") || lower.starts_with("how would i say ") {
+        return Some(TurnAnalysis {
+            intent: "translate".to_string(), task: user.trim().to_string(),
+            factual: false, check_correction: false,
+        });
+    }
+    if (lower.contains("false-friend") || lower.contains("false friend"))
+        && ["challenge", "quiz", "exercise", "practice"].iter().any(|cue| lower.contains(cue))
+    {
+        return Some(TurnAnalysis {
+            intent: "practice".to_string(), task: user.trim().to_string(),
+            factual: false, check_correction: false,
+        });
+    }
+    None
 }
 
 fn stabilize_analysis(mut analysis: TurnAnalysis, user: &str) -> TurnAnalysis {

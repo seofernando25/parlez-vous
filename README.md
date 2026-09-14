@@ -40,7 +40,7 @@ See the [Installation Guide](docs/installation.md) for the complete setup. A cle
   bun tauri dev
   ```
 
-`uv` is only required for optional Python model/services. On desktop, Parlez-vous can set up its own private local AI runtime from Settings. Advanced users can instead connect an OpenAI-compatible endpoint such as Ollama, LM Studio, OpenRouter, OpenAI, vLLM, or llama.cpp.
+`uv` is only required for optional Python model/services. On desktop, Parlez-vous offers an **Express** private local-AI setup and a focused **Advanced** path for connecting an existing OpenAI-compatible endpoint such as Ollama, LM Studio, OpenRouter, OpenAI, vLLM, or llama.cpp.
 
 ### 2. Handwriting models (optional)
 

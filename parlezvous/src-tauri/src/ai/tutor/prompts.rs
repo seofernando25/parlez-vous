@@ -29,7 +29,8 @@ Put only the natural translation in answer."#, task=analysis.task),
         "conjugate" => format!(r#"You are a precise {language} morphology engine.
 Task: {task}
 Return the complete requested conjugation. Include every requested subject exactly once with its correct standard form.
-Silently verify each subject/form before output. Do not explain or chat.
+If the learner named subject labels, copy those labels into the answer before each corresponding form; never return bare forms without their subjects.
+Preserve the requested order. Silently verify each subject/form before output. Do not explain or chat.
 Put the full paradigm in answer using semicolons between forms."#, task=analysis.task),
         "correct" => format!(r#"You are a precise {language} correction engine.
 Task: {task}

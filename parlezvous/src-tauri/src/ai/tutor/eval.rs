@@ -70,6 +70,31 @@ async fn local_teacher_quality_gate() {
     let text = joined(&aller);
     for form in ["vais", "vas", "va", "allons", "allez", "vont"] { assert!(text.contains(form), "aller missing {form}: {text}"); }
 
+
+    let portuguese_conjugation = ask(&ai, "Portuguese", "Beginner", &model, vec![("user", "Conjugate dançar in the present tense for eu, tu, ele/ela, nós, vós, eles/elas.")]).await;
+    println!("dançar: {:?}", portuguese_conjugation.response_parts);
+    assert_chat_shape("dançar", &portuguese_conjugation);
+    let text = joined(&portuguese_conjugation);
+    for form in ["eu danço", "tu danças", "ele/ela dança", "nós dançamos", "vós dançais", "eles/elas dançam"] { assert!(text.contains(form), "dançar missing {form}: {text}"); }
+
+    let spanish_conjugation = ask(&ai, "Spanish", "Beginner", &model, vec![("user", "Conjugate bailar in the present tense for yo, tú, él/ella/usted, nosotros, vosotros, ellos/ellas/ustedes.")]).await;
+    println!("bailar: {:?}", spanish_conjugation.response_parts);
+    assert_chat_shape("bailar", &spanish_conjugation);
+    let text = joined(&spanish_conjugation);
+    for form in ["yo bailo", "tú bailas", "él/ella/usted baila", "nosotros", "bailamos", "vosotros", "bailáis", "ellos/ellas/ustedes bailan"] { assert!(text.contains(form), "bailar missing {form}: {text}"); }
+
+    let italian_conjugation = ask(&ai, "Italian", "Beginner", &model, vec![("user", "Conjugate andare in the present tense for io, tu, lui/lei, noi, voi, loro.")]).await;
+    println!("andare: {:?}", italian_conjugation.response_parts);
+    assert_chat_shape("andare", &italian_conjugation);
+    let text = joined(&italian_conjugation);
+    for form in ["io vado", "tu vai", "lui/lei va", "noi andiamo", "voi andate", "loro vanno"] { assert!(text.contains(form), "andare missing {form}: {text}"); }
+
+    let german_conjugation = ask(&ai, "German", "Beginner", &model, vec![("user", "Conjugate gehen in the present tense for ich, du, er/sie/es, wir, ihr, sie/Sie.")]).await;
+    println!("gehen: {:?}", german_conjugation.response_parts);
+    assert_chat_shape("gehen", &german_conjugation);
+    let text = joined(&german_conjugation);
+    for form in ["ich gehe", "du gehst", "er/sie/es geht", "wir gehen", "ihr geht", "sie/sie gehen"] { assert!(text.contains(form), "gehen missing {form}: {text}"); }
+
     let correction = ask(&ai, "French", "Intermediate", &model, vec![("user", "Je suis allé au magasin hier et j’achète du pain.")]).await;
     println!("correction: {:?} / {:?}", correction.response_parts, correction.idealized_correction);
     assert_chat_shape("correction", &correction);

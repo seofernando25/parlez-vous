@@ -41,9 +41,9 @@
             {/if}
         </section>
 
-        <a class="choice advanced" href="/settings/advanced">
+        <a class="choice advanced" href={`/setup/ai/advanced?return=${encodeURIComponent(returnTo)}`}>
             <div class="choice-icon"><SlidersHorizontal size={22} /></div>
-            <div class="copy"><h2>Advanced</h2><p>Use LM Studio, Ollama, OpenRouter, OpenAI, or another compatible endpoint.</p></div>
+            <div class="copy"><h2>Advanced</h2><p>Connect LM Studio, Ollama, OpenRouter, OpenAI, or another compatible endpoint.</p></div>
         </a>
     </div>
 
