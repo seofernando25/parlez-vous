@@ -103,7 +103,7 @@ graph TD
     A[SvelteKit Frontend] <-->|Tauri IPC Invoke / Events| B[Tauri Rust Backend]
     B -->|rusqlite / sqlite-vec| C[(SQLite Database)]
     B -->|ONNX Runtime / Burn| D[Hangul Handwriting Model]
-    B -->|Local HTTP API| E[Ollama LLM Engine]
+    B -->|OpenAI-compatible HTTP| E[Remote AI: Ollama / LM Studio / OpenRouter / OpenAI / Custom]
     B -->|Local HTTP API| F[Whisper ASR / Qwen3-TTS Servers]
     B -->|LiteRT C API| G[On-Device Gemma Model (Android)]
 \`\`\`
@@ -145,9 +145,23 @@ To provide highly specific reference material during chat sessions (e.g. referen
 
 1. **PDF Text Extraction**: Extracted using the \`pdf-extract\` crate.
 2. **Chunking**: Text is split into overlapping chunks of ~1000 characters, respecting character boundaries and paragraph markers.
-3. **Embedding Generation**: Chunks are processed via local Ollama models (such as \`nomic-embed-text\`) into 768-dimensional floats.
+3. **Embedding Generation**: Chunks use the configured OpenAI-compatible \`/v1/embeddings\` endpoint. The current sqlite-vec index is fixed at 768 dimensions, so the embedding model must support a 768-dimensional response.
 4. **Vector Storage**: Inserted as byte slices into the virtual \`vec_chunks\` table utilizing the \`sqlite-vec\` index.
 5. **Context Querying**: During character chat, the user's latest prompt is embedded, and a cosine-similarity query returns the most relevant textbook page chunks to inject into the LLM system prompt.
+
+---
+
+## 4. AI Provider Boundary
+
+Remote inference has one implementation: \`OpenAiCompatibleAdapter\`. It targets the broadly-supported OpenAI-compatible surface (\`/v1/models\`, \`/v1/chat/completions\`, and \`/v1/embeddings\`) over \`reqwest\`. Provider names in Settings are presets for endpoint/auth defaults rather than separate backend implementations.
+
+- **Ollama**: \`http://localhost:11434/v1\`
+- **LM Studio**: \`http://localhost:1234/v1\`
+- **OpenRouter**: \`https://openrouter.ai/api/v1\`
+- **OpenAI**: \`https://api.openai.com/v1\`
+- **OpenAI-compatible**: arbitrary compatible endpoint (vLLM, llama.cpp servers, ModelScope-served endpoints, and similar gateways)
+
+Android LiteRT remains a separate provider because it is a native on-device runtime rather than an HTTP API. A provider-specific implementation should only be added when the product needs behavior that cannot be represented by the compatibility layer, such as OAuth, a proprietary protocol, or a provider-specific catalog.
 `,To=`# Application Features
 
 **Parlez-vous?** includes a suite of interactive tools designed to implement active, output-oriented language acquisition.
@@ -277,7 +291,7 @@ bun tauri android dev medium_phone --no-watch
 Tauri forwards the frontend dev port. To let the emulator use the existing \`localhost\` defaults for host AI services, reverse the service ports as needed:
 
 \`\`\`bash
-adb reverse tcp:11434 tcp:11434  # Ollama
+adb reverse tcp:11434 tcp:11434  # example local AI endpoint (Ollama preset)
 adb reverse tcp:8000 tcp:8000    # Whisper-compatible ASR
 adb reverse tcp:5050 tcp:5050    # OpenAI-compatible TTS
 \`\`\`
@@ -352,7 +366,7 @@ cd parlezvous
 bun tauri ios build --debug --target aarch64-sim --no-sign --ci
 \`\`\`
 
-The initial iOS port intentionally uses the existing server-backed Ollama/ASR/TTS paths. The custom LiteRT and Supertonic plugins include Swift bridge packages so the app builds and launches, but their on-device model capabilities report unavailable on iOS until native Apple implementations are added.
+The initial iOS port intentionally uses server-backed OpenAI-compatible AI/ASR/TTS paths. The custom LiteRT and Supertonic plugins include Swift bridge packages so the app builds and launches, but their on-device model capabilities report unavailable on iOS until native Apple implementations are added.
 
 ---
 
@@ -426,25 +440,33 @@ Desktop playback always uses the configured server. The TTS policy is persisted 
 
 ---
 
-## 4. Local Large Language Models (LLM)
+## 4. AI Model Providers
 
-The conversational tutor and journaling grading engine can run on local computers or on-device on mobile:
+Remote generation uses one OpenAI-compatible transport rather than vendor-specific SDKs. In **Settings → AI & Speech**, choose a preset or enter a custom endpoint:
 
-### Option A: Server-Based LLM using Ollama (Desktop & local-network Mobile)
-1. Install Ollama from [ollama.ai](https://ollama.ai).
-2. Run your preferred model (we recommend \`gemma-4-E2B-it\` or similar capability instruct model):
-   \`\`\`bash
-   ollama run gemma-4-E2B-it
-   \`\`\`
-* **Desktop Setup:** Connects automatically to \`http://localhost:11434\` (default).
-* **Mobile Setup:** You can connect the mobile client to the Ollama server running on your host computer by updating the Ollama Server URL in the settings to your local network IP (e.g., \`http://192.168.1.50:11434\`). Make sure to launch Ollama with the environment variable \`OLLAMA_HOST=0.0.0.0\` so it accepts network connections.
+| Preset | Default API root |
+| --- | --- |
+| Ollama | \`http://localhost:11434/v1\` |
+| LM Studio | \`http://localhost:1234/v1\` |
+| OpenRouter | \`https://openrouter.ai/api/v1\` |
+| OpenAI | \`https://api.openai.com/v1\` |
+| OpenAI-compatible | user-supplied |
 
-### Option B: Local On-Device LLM using Google LiteRT (Mobile / Offline)
-To support fully offline, private chat and journaling on mobile devices:
-1. The Android client features the **Google LiteRT** (TensorFlow Lite) plugin.
-2. Enter your HuggingFace Access Token in the app settings panel.
-3. Use the in-app download buttons to download the \`gemma-4-E2B-it.litertlm\` model file and tokenizer directly to your phone.
-4. The application will automatically route chat, journal, conjugation, and puzzle generation through the on-device model while it is selected.
+The custom option is appropriate for compatible vLLM/llama.cpp servers, ModelScope-served endpoints, gateways, and other services that implement the same API. Add an API key when the service requires bearer authentication. Model discovery uses \`/v1/models\`, but the model field is always editable so endpoints without a model catalog still work.
 
-> **RAG note:** textbook PDF retrieval still uses an \`EmbeddingProvider\` backed by Ollama. LiteRT chat itself can be offline, but textbook ingestion/search currently requires a reachable Ollama embedding service (for example through \`adb reverse tcp:11434 tcp:11434\` on the emulator).
+For Ollama, for example:
+
+\`\`\`bash
+ollama run gemma3:4b
+\`\`\`
+
+Then use \`http://localhost:11434/v1\`. On a physical phone, replace localhost with a reachable LAN address. On an Android emulator, \`adb reverse tcp:11434 tcp:11434\` can preserve the localhost default.
+
+### Local On-Device LLM using Google LiteRT (Android)
+
+1. Enter a Hugging Face access token in Settings if the model download requires one.
+2. Download the \`gemma-4-E2B-it.litertlm\` model/tokenizer from the on-device AI section.
+3. Select the \`.litertlm\` model. \`AiRouter\` routes that model to native LiteRT; all other model names use the configured OpenAI-compatible endpoint.
+
+> **RAG note:** textbook PDF retrieval uses the same configured remote endpoint's \`/v1/embeddings\` capability. The current sqlite-vec index is \`float[768]\`, so the embedding model must support requesting/returning 768 dimensions. Fully offline Android RAG still requires a future on-device embedding provider.
 `,Do="# Developer & Contribution Guide\n\nInstructions on how to extend the codebase, train custom models, and modify curriculum parameters.\n\n---\n\n\n## Source organization invariant\n\nAuthored source files must stay at or below **300 lines of code**. The rule applies to TypeScript, JavaScript, Svelte, CSS, Rust, Kotlin, and Gradle Kotlin files under the app, native plugins, and website. Generated/vendor/build output is excluded.\n\nThe invariant is enforced by:\n\n```bash\ncd parlezvous\nbun run check:loc\n```\n\n`bun run verify` includes this check before type diagnostics, tests, and the production build. Prefer extracting cohesive domain modules, controllers/services, or focused components rather than mechanically splitting a large file by line count. Routes and plugin entrypoints should stay thin; stateful orchestration belongs in domain controllers/services, while pure data/transforms belong in standalone modules.\n\n---\n\n## 1. Training & Exporting the Jamo CNN Model\n\nThe handwriting canvas utilizes a custom-trained CNN classification model built in PyTorch.\n\n1. **Prerequisites**: Make sure you have `uv` installed. Navigate to the `hangulnist` folder:\n   ```bash\n   cd hangulnist\n   ```\n2. **Setup**: Install python dependencies:\n   ```bash\n   uv sync\n   ```\n3. **Training pipeline**:\n   - `main.py` is configured to download the **Wayperwayp Hangul Characters Dataset** from Kaggle Hub.\n   - It trains a 3-layer Convolutional Neural Network with Batch Normalization and Focal Loss (to focus on hard-to-distinguish stroke differences).\n   - Images are resized to `28x28`, inverted, and threshold-sharpened.\n   - To trigger the training:\n     ```bash\n     uv run main.py\n     ```\n4. **ONNX Export**:\n   - The training script automatically compiles and exports the trained PyTorch network weights into an ONNX model file named `character_model.onnx` and its weight data file `character_model.onnx.data`.\n5. **Build integration**: Keep `character_model.onnx` and `character_model.onnx.data` together in `hangulnist/`. The Tauri build detects them there automatically. The model is optional: without it, the rest of the application still compiles and only Hangul handwriting inference is disabled.\n\n---\n\n## 2. Modifying the Curriculum Tiers & Themes\n\nThe learning structure is defined inside `parlezvous/src/lib/curriculum.ts`:\n\n- The curriculum maps levels 1 to 7 corresponding to CEFR levels from **A1** (The Outskirts) to **Mastery/C2** (The Horizon).\n- Each tier contains a specific set of thematic modules (e.g. `greetings`, `numbers`, `family`, `shopping`, `travel`, `science`).\n- To add a new theme:\n  1. Add a new object inside the `themes` array of the appropriate `Tier` in `CURRICULUM_TIERS`.\n  2. Define a unique `id`, a friendly `name`, and a detailed `description`.\n  3. The LLM generation services will automatically query the theme database and use the description as semantic seeds in prompts.\n\n---\n\n## 3. Database Migrations\n\nSQLite schema updates are defined in `parlezvous/src-tauri/src/db/schema.rs` and applied by `db/mod.rs`:\n\n- To alter tables or add columns, define a new schema SQL batch constant (e.g. `pub const SCHEMA_V17: &str = ...`).\n- Increment `DB_VERSION_NUM`.\n- Append the new schema constant to the migration array in `db/mod.rs`.\n- The migrator automatically compares the database's `PRAGMA user_version` value and applies all pending schema migrations sequentially when the application boots up.\n",Oo=q(`<button><span class="indicator svelte-jgsu1m"></span> <span class="title"> </span></button>`),ko=q(`<div class="docs-container svelte-jgsu1m"><aside class="docs-sidebar svelte-jgsu1m"><div class="sidebar-header svelte-jgsu1m"><h4 class="svelte-jgsu1m">Documentation</h4></div> <nav class="sidebar-nav svelte-jgsu1m"></nav></aside> <main class="doc-content-panel svelte-jgsu1m"><div class="markdown-body"></div></main></div>`);function Ao(e,t){Ye(t,!0);let n=new bo,r={introduction:{title:`Introduction`,content:Co},architecture:{title:`System Architecture`,content:wo},features:{title:`Application Features`,content:To},installation:{title:`Installation & Setup`,content:Eo},development:{title:`Developer Guide`,content:Do}},i=j(`introduction`),a=bt(()=>{let e=(r[W(i)]?.content||``).replace(/file:\/\/[^)\s]+/g,e=>{let t=e.split(`/`),n=t[t.length-1].split(`.`)[0];return n===`README`?`#docs-introduction`:`#docs-${n}`});return n.parse(e)});function o(e){M(i,e,!0);let t=document.querySelector(`.doc-content-panel`);t&&(t.scrollTop=0)}function s(){let e=window.location.hash;if(e.startsWith(`#docs-`)){let t=e.replace(`#docs-`,``);r[t]?M(i,t,!0):(t===`introduction`||t===`README`)&&M(i,`introduction`)}}_i(()=>(window.addEventListener(`hashchange`,s),s(),()=>{window.removeEventListener(`hashchange`,s)}));var c=ko(),l=F(c),u=I(F(l),2);Br(u,21,()=>Object.entries(r),Ir,(e,t)=>{var n=bt(()=>m(W(t),2));let r=()=>W(n)[0],a=()=>W(n)[1];var s=Oo();let c;var l=un(I(F(s),2),!0);D(s),On(()=>{c=Qr(s,1,`nav-item svelte-jgsu1m`,null,c,{active:W(i)===r()}),Y(l,a().title)}),G(`click`,s,()=>o(r())),J(e,s)}),D(u),D(l);var d=I(l,2),f=F(d);Kr(f,()=>W(a),!0),D(f),D(d),D(c),J(e,c),Xe()}gr([`click`]);var jo=q(`<div class="support-container"><div class="support-header"><span class="eyebrow">Get Involved</span> <h2>Support & Contribute</h2> <p class="subtitle">Parlez-vous? is powered by open source contributors and community support.</p></div> <div class="support-grid"><div class="support-card glassmorphic"><div class="card-icon">💻</div> <h3>For Developers</h3> <p>Whether you want to fix bugs, optimize on-device inference, improve Svelte interfaces, or extend database migrations, we welcome contributions!</p> <div class="guide-list"><div class="guide-item"><span class="num">1</span> <div class="text"><strong>Fork & Clone</strong> <span>Head over to our GitHub repository and pull the source branch.</span></div></div> <div class="guide-item"><span class="num">2</span> <div class="text"><strong>Tauri Setup</strong> <span>Follow the compilation guide in our <a href="https://github.com/n123xyz/parlez-vous/blob/main/docs/installation.md" target="_blank" rel="noopener noreferrer">docs</a> to set up Rust, Bun, and Android Studio NDK paths.</span></div></div> <div class="guide-item"><span class="num">3</span> <div class="text"><strong>Submit a PR</strong> <span>Create a feature branch, run local tests, and open a Pull Request. We review contributions weekly.</span></div></div></div> <a href="https://github.com/n123xyz/parlez-vous" target="_blank" rel="noopener noreferrer" class="btn btn-github"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg> View GitHub Repository</a></div> <div class="support-card glassmorphic highlighted-card"><div class="card-icon">☕</div> <h3>Buy Us a Coffee</h3> <p>Our project runs entirely on zero ads and zero paywalls. 100% of the funds go towards testing Android hardware, purchasing API keys for external evaluation, and general development infrastructure.</p> <p class="donation-desc">If <b>Parlez-vous?</b> has helped you learn a language, saved you subscription fees, or made your development workflows easier, please consider supporting the project.</p> <div class="kofi-section"><a href="https://ko-fi.com/parlezvous" target="_blank" rel="noopener noreferrer" class="kofi-button"><img src="https://storage.ko-fi.com/cdn/cup-border.png" alt="Cup icon" class="kofi-cup"/> Support us on Ko-fi</a></div> <div class="other-ways"><h4>Other ways to support:</h4> <ul><li>Give us a ⭐ on GitHub</li> <li>Share the app with other language learners</li> <li>Provide feedback by opening issues</li></ul></div></div></div></div>`);function Mo(e){J(e,jo())}var No=q(`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M9 9v6a3 3 0 0 0 3 3h1.586l4.707 4.707A1 1 0 0 0 20 22V4a1 1 0 0 0-1.707-.707L13.586 8H12a3 3 0 0 0-3 3z"></path></svg> <span class="unmute-text">Tap to Unmute</span>`,1),Po=wr(`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`),Fo=q(`<div class="welcome-container"><div class="two-panel-grid"><div class="panel panel-left"><div class="phone-mockup"><div class="phone-speaker"></div> <div class="phone-screen"><video class="phone-video" autoplay="" loop="" playsinline="" controls=""></video> <div class="screen-content overlay-content"><button class="unmute-overlay-btn"><!></button></div></div></div></div> <div class="panel panel-right"><div class="panel-game-container"><!></div></div></div> <div class="languages-section"><span class="sec-badge">Supported Languages</span> <h3>Practice in 30+ Languages</h3> <!></div></div>`,2),Io=q(`<div class="app-layout"><header class="app-header"><div class="logo-container" role="button" tabindex="0"><div class="logo-icon">P</div> <span class="logo-text">Parlez<span class="yellow-text">Vous</span></span></div> <nav class="nav-links"><button>Welcome</button> <button>About</button> <button>Docs</button> <button>Support</button></nav> <div class="header-actions"><a href="https://github.com/n123xyz/parlez-vous" target="_blank" rel="noopener noreferrer" class="github-icon-link" aria-label="GitHub Repository"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a></div></header> <main class="main-content"><!></main> <footer class="app-footer"><p>&copy; 2026 Parlez-vous. Built with Svelte, Tauri, and Rust.</p></footer></div>`);function Lo(e,t){Ye(t,!0);let n=j(`welcome`);function r(e){M(n,e,!0),window.scrollTo({top:0,behavior:`smooth`})}let i=j(`fr`),a=j(0),o=j(!0);function s(e){M(i,e,!0),M(a,W(a)+1);let t=document.querySelector(`.game-card`);t&&t.scrollIntoView({behavior:`smooth`,block:`center`})}var c=Io(),l=F(c),u=F(l),d=I(u,2),f=F(d);let p;var m=I(f,2);let h;var g=I(m,2);let _;var v=I(g,2);let y;D(d),Oe(2),D(l);var b=I(l,2),x=F(b),S=e=>{var t=Fo(),n=F(t),r=F(n),c=F(r),l=I(F(c),2),u=F(l),d=I(u,2),f=F(d),p=F(f),m=e=>{var t=No();Oe(2),J(e,t)},h=e=>{J(e,Po())};Fr(p,e=>{W(o)?e(m):e(h,-1)}),D(f),D(d),D(l),D(c),D(r);var g=I(r,2),_=F(g);ki(F(_),{get selectedLangCode(){return W(i)},set selectedLangCode(e){M(i,e,!0)},get startTrigger(){return W(a)},set startTrigger(e){M(a,e,!0)}}),D(_),D(g),D(n);var v=I(n,2);Mi(I(F(v),4),{onSelect:s}),D(v),D(t),On(()=>{di(u,`src`,`/parlezvous.mp4`),di(f,`aria-label`,W(o)?`Unmute video`:`Mute video`)}),hi(u,()=>W(o),e=>M(o,e)),G(`click`,f,e=>{e.stopPropagation(),M(o,!W(o))}),J(e,t)},ee=e=>{Pi(e,{})},te=e=>{Ao(e,{})},ne=e=>{Mo(e,{})};Fr(x,e=>{W(n)===`welcome`?e(S):W(n)===`about`?e(ee,1):W(n)===`docs`?e(te,2):W(n)===`support`&&e(ne,3)}),D(b),Oe(2),D(c),On(()=>{p=Qr(f,1,`nav-btn`,null,p,{active:W(n)===`welcome`}),h=Qr(m,1,`nav-btn`,null,h,{active:W(n)===`about`}),_=Qr(g,1,`nav-btn`,null,_,{active:W(n)===`docs`}),y=Qr(v,1,`nav-btn`,null,y,{active:W(n)===`support`})}),G(`click`,u,()=>r(`welcome`)),G(`keydown`,u,e=>e.key===`Enter`&&r(`welcome`)),G(`click`,f,()=>r(`welcome`)),G(`click`,m,()=>r(`about`)),G(`click`,g,()=>r(`docs`)),G(`click`,v,()=>r(`support`)),J(e,c),Xe()}gr([`click`,`keydown`]),Ar(Lo,{target:document.getElementById(`app`)});
