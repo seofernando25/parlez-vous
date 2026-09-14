@@ -1,0 +1,200 @@
+.app-layout {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        background: radial-gradient(circle at top, rgba(253, 253, 150, 0.05) 0%, rgba(9, 9, 11, 0) 60%), #09090b;
+    }
+
+    /* Header Styling */
+    .app-layout .app-header {
+        height: 70px;
+        border-bottom: 1px solid rgba(63, 63, 70, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 2rem;
+        background: rgba(9, 9, 11, 0.75);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
+
+    .app-layout .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .app-layout .logo-icon {
+        width: 32px;
+        height: 32px;
+        background: #fdfd96;
+        color: #09090b;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.25rem;
+        box-shadow: 0 0 15px rgba(253, 253, 150, 0.4);
+    }
+
+    .app-layout .logo-text {
+        font-size: 1.35rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: #f4f4f5;
+    }
+
+    .app-layout .yellow-text {
+        color: #fdfd96;
+    }
+
+    .app-layout .nav-links {
+        display: flex;
+        gap: 0.5rem;
+        background: rgba(24, 24, 27, 0.5);
+        border: 1px solid rgba(63, 63, 70, 0.4);
+        padding: 0.25rem;
+        border-radius: 12px;
+    }
+
+    .app-layout .nav-btn {
+        background: transparent;
+        border: none;
+        color: #a1a1aa;
+        padding: 0.5rem 1.25rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        font-family: inherit;
+    }
+
+    .app-layout .nav-btn:hover {
+        color: #f4f4f5;
+    }
+
+    .app-layout .nav-btn.active {
+        background: #fdfd96;
+        color: #09090b;
+        box-shadow: 0 2px 10px rgba(253, 253, 150, 0.15);
+    }
+
+    .app-layout .github-icon-link {
+        color: #a1a1aa;
+        transition: color 0.2s;
+    }
+
+    .app-layout .github-icon-link:hover {
+        color: #fdfd96;
+    }
+
+    /* Main Content */
+    .app-layout .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Welcome Tab Styles */
+    .app-layout .welcome-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 3.5rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 5rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .app-layout .two-panel-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 3rem;
+        align-items: center;
+    }
+
+    @media (min-width: 992px) {
+        .app-layout .two-panel-grid {
+            grid-template-columns: 1.1fr 1fr;
+        }
+    }
+
+    .app-layout .panel {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+    }
+
+    /* Left Panel: Phone Mockup */
+    .app-layout .phone-mockup {
+        width: 310px;
+        height: 620px;
+        background: #18181b;
+        border: 12px solid #27272a;
+        border-radius: 44px;
+        position: relative;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(63, 63, 70, 0.4);
+        box-sizing: border-box;
+    }
+
+    .app-layout .phone-speaker {
+        width: 60px;
+        height: 5px;
+        background: #3f3f46;
+        border-radius: 99px;
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+    }
+
+    .app-layout .phone-screen {
+        width: 100%;
+        height: 100%;
+        border-radius: 32px;
+        overflow: hidden;
+        position: relative;
+        background: #09090b;
+        border: 2px solid #09090b;
+        box-sizing: border-box;
+    }
+
+    .app-layout .phone-video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 1;
+    }
+
+    .app-layout .screen-content {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 40px 1.5rem 20px 1.5rem;
+        box-sizing: border-box;
+        position: relative;
+    }
+
+    .app-layout .overlay-content {
+        position: relative;
+        z-index: 2;
+        pointer-events: none;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }

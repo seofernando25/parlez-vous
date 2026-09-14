@@ -1,0 +1,10 @@
+pub(crate) mod system;
+pub(crate) mod profile;
+pub(crate) mod textbooks;
+pub(crate) mod journal;
+pub(crate) mod speech;
+pub(crate) mod handwriting;
+pub(crate) mod avatar;
+pub(crate) mod conjugation;
+pub(crate) mod coding;
+pub(crate) mod language_game;

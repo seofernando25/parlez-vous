@@ -1,0 +1,640 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0A8E8A29258E610D64C3DC50 /* libapp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2EA3A88E655F56231ECAB29F /* libapp.a */; };
+		10CAB4A601BAA0C07C45B5A8 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 3C118E97E6273E1B045C3E5D /* assets */; };
+		1FC58202315239F716BE35F9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4F5BC0D62A2E50C556CC60C7 /* LaunchScreen.storyboard */; };
+		37AE92D58DAB02BE0D3A1A2B /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6973E7F2B652579F5B2E3426 /* Security.framework */; };
+		490F2F8052A0176B38AF668C /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 628A3BFF40B766FD0B7B5933 /* main.mm */; };
+		5389A4C256E24E8B6DF862D5 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 983CA6EF6EDF341C16C06C5B /* WebKit.framework */; };
+		56998AE625D04EE18D0F2EB8 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9549CBBD6FD49FA3116EF6A /* UIKit.framework */; };
+		640C1F639E46DAC23543176D /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 71637F3C1E83482B74F7061D /* MetalKit.framework */; };
+		9517735779D8E81D070CFED8 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E4D4342E54975C38845389E6 /* Metal.framework */; };
+		9F2EC1109245184CAA61AA6C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C34F4FBA5F166D4035C2E7A6 /* Assets.xcassets */; };
+		CE437A4089F0C7FE0F37DF43 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 039D0836A88DC91543E6BF67 /* QuartzCore.framework */; };
+		F528D3FDF91F802CA987A9C1 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 45D3DD6A82CE6A5484BE50FB /* CoreGraphics.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		039D0836A88DC91543E6BF67 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		049B89FC0EBAFE85D0D8461B /* textbooks.rs */ = {isa = PBXFileReference; path = textbooks.rs; sourceTree = "<group>"; };
+		04F3D875AB3F1CA06289E308 /* calendar.rs */ = {isa = PBXFileReference; path = calendar.rs; sourceTree = "<group>"; };
+		06F87E1AA48D609528059FA0 /* bindings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
+		0ACD88D68766AE74FD32A21A /* profile.rs */ = {isa = PBXFileReference; path = profile.rs; sourceTree = "<group>"; };
+		14A56D16255379E3E0687F1E /* avatar.rs */ = {isa = PBXFileReference; path = avatar.rs; sourceTree = "<group>"; };
+		150993E3B6BF1CE84BFE5181 /* router.rs */ = {isa = PBXFileReference; path = router.rs; sourceTree = "<group>"; };
+		151653923BE8ADB3E9ECD551 /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
+		17145DC311B5B87D7162F59A /* conjugation.rs */ = {isa = PBXFileReference; path = conjugation.rs; sourceTree = "<group>"; };
+		17301DCD0453AEC670C4D952 /* puzzles.rs */ = {isa = PBXFileReference; path = puzzles.rs; sourceTree = "<group>"; };
+		1929CDEDC24BAF4308B8BBE4 /* srs.rs */ = {isa = PBXFileReference; path = srs.rs; sourceTree = "<group>"; };
+		2A953C3E661A5F735DEAB228 /* embedding.rs */ = {isa = PBXFileReference; path = embedding.rs; sourceTree = "<group>"; };
+		2D5E4D2860BE0FF7E6B88554 /* puzzles.rs */ = {isa = PBXFileReference; path = puzzles.rs; sourceTree = "<group>"; };
+		2EA3A88E655F56231ECAB29F /* libapp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libapp.a; sourceTree = "<group>"; };
+		30B77B32560377AFA961324D /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
+		35A786F60E5D37F70B98D055 /* schema.rs */ = {isa = PBXFileReference; path = schema.rs; sourceTree = "<group>"; };
+		385F9DE5C498A06F382A0860 /* types.rs */ = {isa = PBXFileReference; path = types.rs; sourceTree = "<group>"; };
+		39B96D35CC6DCABFA168CB43 /* ids.rs */ = {isa = PBXFileReference; path = ids.rs; sourceTree = "<group>"; };
+		3AF2991F4038477B7B728E7E /* model.rs */ = {isa = PBXFileReference; path = model.rs; sourceTree = "<group>"; };
+		3C118E97E6273E1B045C3E5D /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = SOURCE_ROOT; };
+		45D3DD6A82CE6A5484BE50FB /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		47F8BF4D08718B5F682AB20C /* system.rs */ = {isa = PBXFileReference; path = system.rs; sourceTree = "<group>"; };
+		49470E24B61DDF1CA4717121 /* test_bytes.rs */ = {isa = PBXFileReference; path = test_bytes.rs; sourceTree = "<group>"; };
+		4A5A8C725FEF4B8A42280CA7 /* journal.rs */ = {isa = PBXFileReference; path = journal.rs; sourceTree = "<group>"; };
+		4D32E13E117ADC7B563F0BBA /* conjugator.rs */ = {isa = PBXFileReference; path = conjugator.rs; sourceTree = "<group>"; };
+		4F5BC0D62A2E50C556CC60C7 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		59C105BF46F20B9868131248 /* chat.rs */ = {isa = PBXFileReference; path = chat.rs; sourceTree = "<group>"; };
+		620881139BCDD2B53F0DA955 /* chat.rs */ = {isa = PBXFileReference; path = chat.rs; sourceTree = "<group>"; };
+		628A3BFF40B766FD0B7B5933 /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
+		638F34B46DE13B6959AC7EF1 /* chat_history.rs */ = {isa = PBXFileReference; path = chat_history.rs; sourceTree = "<group>"; };
+		6973E7F2B652579F5B2E3426 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		6D08B72A4C237065E3BE9194 /* main.rs */ = {isa = PBXFileReference; path = main.rs; sourceTree = "<group>"; };
+		6D62D208E68327B5D15E2D8C /* vocab.rs */ = {isa = PBXFileReference; path = vocab.rs; sourceTree = "<group>"; };
+		6ECB342E4DEF0941056BDBB3 /* profile.rs */ = {isa = PBXFileReference; path = profile.rs; sourceTree = "<group>"; };
+		703C0EC2A9B353F3475E0C4B /* puzzles.rs */ = {isa = PBXFileReference; path = puzzles.rs; sourceTree = "<group>"; };
+		71637F3C1E83482B74F7061D /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+		759E1E7955052FC39B8F4B19 /* conjugation.rs */ = {isa = PBXFileReference; path = conjugation.rs; sourceTree = "<group>"; };
+		7A1077786EAA1D2FFAD63A03 /* alphabet.rs */ = {isa = PBXFileReference; path = alphabet.rs; sourceTree = "<group>"; };
+		7BCE700F30C7C6561CAA6BA3 /* language_game.rs */ = {isa = PBXFileReference; path = language_game.rs; sourceTree = "<group>"; };
+		7C68CA30978F16CB958E0A2B /* lib.rs */ = {isa = PBXFileReference; path = lib.rs; sourceTree = "<group>"; };
+		874964F18D48FA761C7D9266 /* parlezvous_iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = parlezvous_iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8EF8510F045379277790F26C /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
+		97BC3454ABB7ECAB31A75533 /* parlezvous_iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = parlezvous_iOS.entitlements; sourceTree = "<group>"; };
+		983CA6EF6EDF341C16C06C5B /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		A70D6A4BA67E69DABA840FA7 /* cyrillic.rs */ = {isa = PBXFileReference; path = cyrillic.rs; sourceTree = "<group>"; };
+		A885D7D8DD4FA5DB9B9C98C2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		A9549CBBD6FD49FA3116EF6A /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		ADD28FDD6275B055EA63D27F /* providers.rs */ = {isa = PBXFileReference; path = providers.rs; sourceTree = "<group>"; };
+		B3091AF2DA1C7D14FCD8FF3F /* model.rs */ = {isa = PBXFileReference; path = model.rs; sourceTree = "<group>"; };
+		B35CA5C36A9AD30A89B4D359 /* test.rs */ = {isa = PBXFileReference; path = test.rs; sourceTree = "<group>"; };
+		B9089D4564DC91AB3D803382 /* conjugation.rs */ = {isa = PBXFileReference; path = conjugation.rs; sourceTree = "<group>"; };
+		BC602152B374C3740066CEFE /* conjugation.rs */ = {isa = PBXFileReference; path = conjugation.rs; sourceTree = "<group>"; };
+		BD03672929EBC626443EB1C8 /* litert_adapter.rs */ = {isa = PBXFileReference; path = litert_adapter.rs; sourceTree = "<group>"; };
+		BF3C1970F9BFA9FA80A384A2 /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
+		C34F4FBA5F166D4035C2E7A6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C442EFCD64B2C9F02D32B784 /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
+		C5A54059606F69E17A1CAA4F /* chat.rs */ = {isa = PBXFileReference; path = chat.rs; sourceTree = "<group>"; };
+		C8D75B9910C0B7854CBE483C /* speech.rs */ = {isa = PBXFileReference; path = speech.rs; sourceTree = "<group>"; };
+		CD78052852DF12027902239B /* journal.rs */ = {isa = PBXFileReference; path = journal.rs; sourceTree = "<group>"; };
+		CFE2B676F44AA9BA81DE5D07 /* settings.rs */ = {isa = PBXFileReference; path = settings.rs; sourceTree = "<group>"; };
+		D0908166CB04CE8608559343 /* test_perm.rs */ = {isa = PBXFileReference; path = test_perm.rs; sourceTree = "<group>"; };
+		D0C1B850F2CE14EDC07A2DD0 /* journal.rs */ = {isa = PBXFileReference; path = journal.rs; sourceTree = "<group>"; };
+		D24C604E1E3CE47215A99A46 /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
+		DA20278937DD938BA8B6B251 /* ollama_adapter.rs */ = {isa = PBXFileReference; path = ollama_adapter.rs; sourceTree = "<group>"; };
+		DD75BDBA43AD7E36B15CEE01 /* context.rs */ = {isa = PBXFileReference; path = context.rs; sourceTree = "<group>"; };
+		E0745E975FD0F035B85AE8BD /* coding.rs */ = {isa = PBXFileReference; path = coding.rs; sourceTree = "<group>"; };
+		E21E5E933CF6E618CF1EC3A5 /* tts_adapter.rs */ = {isa = PBXFileReference; path = tts_adapter.rs; sourceTree = "<group>"; };
+		E4D4342E54975C38845389E6 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		F0B5BB91019264E966455BED /* curriculum.rs */ = {isa = PBXFileReference; path = curriculum.rs; sourceTree = "<group>"; };
+		F17392E85426A6B07C579BF3 /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
+		F30D5EA7B9CC061390873C66 /* rag.rs */ = {isa = PBXFileReference; path = rag.rs; sourceTree = "<group>"; };
+		F3A1DF6E54D198D07675AAE4 /* journal.rs */ = {isa = PBXFileReference; path = journal.rs; sourceTree = "<group>"; };
+		F57E34448FB6FF63032048C9 /* journal.rs */ = {isa = PBXFileReference; path = journal.rs; sourceTree = "<group>"; };
+		F5DCF6B1E40E34F55F767726 /* mod.rs */ = {isa = PBXFileReference; path = mod.rs; sourceTree = "<group>"; };
+		F61ABEA1D9A226B4DD9F49E8 /* hangul.rs */ = {isa = PBXFileReference; path = hangul.rs; sourceTree = "<group>"; };
+		FD232539A9C1228C24C5A721 /* handwriting.rs */ = {isa = PBXFileReference; path = handwriting.rs; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8CA75114B9B4D1610D24F9CF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0A8E8A29258E610D64C3DC50 /* libapp.a in Frameworks */,
+				F528D3FDF91F802CA987A9C1 /* CoreGraphics.framework in Frameworks */,
+				9517735779D8E81D070CFED8 /* Metal.framework in Frameworks */,
+				640C1F639E46DAC23543176D /* MetalKit.framework in Frameworks */,
+				CE437A4089F0C7FE0F37DF43 /* QuartzCore.framework in Frameworks */,
+				37AE92D58DAB02BE0D3A1A2B /* Security.framework in Frameworks */,
+				56998AE625D04EE18D0F2EB8 /* UIKit.framework in Frameworks */,
+				5389A4C256E24E8B6DF862D5 /* WebKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		02A33F3864388CDB26FA2675 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				45D3DD6A82CE6A5484BE50FB /* CoreGraphics.framework */,
+				2EA3A88E655F56231ECAB29F /* libapp.a */,
+				E4D4342E54975C38845389E6 /* Metal.framework */,
+				71637F3C1E83482B74F7061D /* MetalKit.framework */,
+				039D0836A88DC91543E6BF67 /* QuartzCore.framework */,
+				6973E7F2B652579F5B2E3426 /* Security.framework */,
+				A9549CBBD6FD49FA3116EF6A /* UIKit.framework */,
+				983CA6EF6EDF341C16C06C5B /* WebKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		04FCEB2FFC5A6A06757E219F /* prompts */ = {
+			isa = PBXGroup;
+			children = (
+				59C105BF46F20B9868131248 /* chat.rs */,
+				759E1E7955052FC39B8F4B19 /* conjugation.rs */,
+				4A5A8C725FEF4B8A42280CA7 /* journal.rs */,
+				30B77B32560377AFA961324D /* mod.rs */,
+				703C0EC2A9B353F3475E0C4B /* puzzles.rs */,
+			);
+			path = prompts;
+			sourceTree = "<group>";
+		};
+		07AFA61E408586CC8F438D6C = {
+			isa = PBXGroup;
+			children = (
+				3C118E97E6273E1B045C3E5D /* assets */,
+				C34F4FBA5F166D4035C2E7A6 /* Assets.xcassets */,
+				4F5BC0D62A2E50C556CC60C7 /* LaunchScreen.storyboard */,
+				70770C14E001E857318761C1 /* Externals */,
+				69A935469757CE88EC344807 /* parlezvous_iOS */,
+				1C5E4C3C8D4A86E0A058A7CB /* Sources */,
+				2934892AD2656C30E5D0A18F /* src */,
+				02A33F3864388CDB26FA2675 /* Frameworks */,
+				BF705486A4FD7A3D12387B62 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		1257B686E62E4282BAEEAFB8 /* ollama */ = {
+			isa = PBXGroup;
+			children = (
+				620881139BCDD2B53F0DA955 /* chat.rs */,
+				BC602152B374C3740066CEFE /* conjugation.rs */,
+				2A953C3E661A5F735DEAB228 /* embedding.rs */,
+				D0C1B850F2CE14EDC07A2DD0 /* journal.rs */,
+				8EF8510F045379277790F26C /* mod.rs */,
+				B3091AF2DA1C7D14FCD8FF3F /* model.rs */,
+				17301DCD0453AEC670C4D952 /* puzzles.rs */,
+			);
+			path = ollama;
+			sourceTree = "<group>";
+		};
+		1C5E4C3C8D4A86E0A058A7CB /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				7D1703655EA721D7256545A0 /* parlezvous */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		2934892AD2656C30E5D0A18F /* src */ = {
+			isa = PBXGroup;
+			children = (
+				7C68CA30978F16CB958E0A2B /* lib.rs */,
+				6D08B72A4C237065E3BE9194 /* main.rs */,
+				49470E24B61DDF1CA4717121 /* test_bytes.rs */,
+				D0908166CB04CE8608559343 /* test_perm.rs */,
+				5575116C47119E0A07F50775 /* ai */,
+				FE1F181BF067F43D45AB688C /* commands */,
+				F90152F716D4FE7836C812D0 /* db */,
+				2AEAAAB7ED6E0E0EC019063B /* model */,
+				55201F1E13704DBD9510A359 /* services */,
+			);
+			name = src;
+			path = ../../src;
+			sourceTree = "<group>";
+		};
+		2AEAAAB7ED6E0E0EC019063B /* model */ = {
+			isa = PBXGroup;
+			children = (
+				7A1077786EAA1D2FFAD63A03 /* alphabet.rs */,
+				A70D6A4BA67E69DABA840FA7 /* cyrillic.rs */,
+				F61ABEA1D9A226B4DD9F49E8 /* hangul.rs */,
+				D24C604E1E3CE47215A99A46 /* mod.rs */,
+			);
+			path = model;
+			sourceTree = "<group>";
+		};
+		55201F1E13704DBD9510A359 /* services */ = {
+			isa = PBXGroup;
+			children = (
+				04F3D875AB3F1CA06289E308 /* calendar.rs */,
+				638F34B46DE13B6959AC7EF1 /* chat_history.rs */,
+				4D32E13E117ADC7B563F0BBA /* conjugator.rs */,
+				F0B5BB91019264E966455BED /* curriculum.rs */,
+				F3A1DF6E54D198D07675AAE4 /* journal.rs */,
+				151653923BE8ADB3E9ECD551 /* mod.rs */,
+				6ECB342E4DEF0941056BDBB3 /* profile.rs */,
+				F30D5EA7B9CC061390873C66 /* rag.rs */,
+				CFE2B676F44AA9BA81DE5D07 /* settings.rs */,
+				1929CDEDC24BAF4308B8BBE4 /* srs.rs */,
+				6D62D208E68327B5D15E2D8C /* vocab.rs */,
+			);
+			path = services;
+			sourceTree = "<group>";
+		};
+		5575116C47119E0A07F50775 /* ai */ = {
+			isa = PBXGroup;
+			children = (
+				DD75BDBA43AD7E36B15CEE01 /* context.rs */,
+				BD03672929EBC626443EB1C8 /* litert_adapter.rs */,
+				F17392E85426A6B07C579BF3 /* mod.rs */,
+				DA20278937DD938BA8B6B251 /* ollama_adapter.rs */,
+				ADD28FDD6275B055EA63D27F /* providers.rs */,
+				150993E3B6BF1CE84BFE5181 /* router.rs */,
+				B35CA5C36A9AD30A89B4D359 /* test.rs */,
+				E21E5E933CF6E618CF1EC3A5 /* tts_adapter.rs */,
+				385F9DE5C498A06F382A0860 /* types.rs */,
+				74C9FDDACBD220D066A1B8DB /* litert */,
+				1257B686E62E4282BAEEAFB8 /* ollama */,
+				04FCEB2FFC5A6A06757E219F /* prompts */,
+			);
+			path = ai;
+			sourceTree = "<group>";
+		};
+		69A935469757CE88EC344807 /* parlezvous_iOS */ = {
+			isa = PBXGroup;
+			children = (
+				A885D7D8DD4FA5DB9B9C98C2 /* Info.plist */,
+				97BC3454ABB7ECAB31A75533 /* parlezvous_iOS.entitlements */,
+			);
+			path = parlezvous_iOS;
+			sourceTree = "<group>";
+		};
+		70770C14E001E857318761C1 /* Externals */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Externals;
+			sourceTree = "<group>";
+		};
+		74C9FDDACBD220D066A1B8DB /* litert */ = {
+			isa = PBXGroup;
+			children = (
+				C5A54059606F69E17A1CAA4F /* chat.rs */,
+				17145DC311B5B87D7162F59A /* conjugation.rs */,
+				CD78052852DF12027902239B /* journal.rs */,
+				F5DCF6B1E40E34F55F767726 /* mod.rs */,
+				3AF2991F4038477B7B728E7E /* model.rs */,
+				2D5E4D2860BE0FF7E6B88554 /* puzzles.rs */,
+			);
+			path = litert;
+			sourceTree = "<group>";
+		};
+		7D1703655EA721D7256545A0 /* parlezvous */ = {
+			isa = PBXGroup;
+			children = (
+				628A3BFF40B766FD0B7B5933 /* main.mm */,
+				B6AC8FE40583C92104F9B0E0 /* bindings */,
+			);
+			path = parlezvous;
+			sourceTree = "<group>";
+		};
+		B6AC8FE40583C92104F9B0E0 /* bindings */ = {
+			isa = PBXGroup;
+			children = (
+				06F87E1AA48D609528059FA0 /* bindings.h */,
+			);
+			path = bindings;
+			sourceTree = "<group>";
+		};
+		BF705486A4FD7A3D12387B62 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				874964F18D48FA761C7D9266 /* parlezvous_iOS.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F90152F716D4FE7836C812D0 /* db */ = {
+			isa = PBXGroup;
+			children = (
+				39B96D35CC6DCABFA168CB43 /* ids.rs */,
+				BF3C1970F9BFA9FA80A384A2 /* mod.rs */,
+				35A786F60E5D37F70B98D055 /* schema.rs */,
+			);
+			path = db;
+			sourceTree = "<group>";
+		};
+		FE1F181BF067F43D45AB688C /* commands */ = {
+			isa = PBXGroup;
+			children = (
+				14A56D16255379E3E0687F1E /* avatar.rs */,
+				E0745E975FD0F035B85AE8BD /* coding.rs */,
+				B9089D4564DC91AB3D803382 /* conjugation.rs */,
+				FD232539A9C1228C24C5A721 /* handwriting.rs */,
+				F57E34448FB6FF63032048C9 /* journal.rs */,
+				7BCE700F30C7C6561CAA6BA3 /* language_game.rs */,
+				C442EFCD64B2C9F02D32B784 /* mod.rs */,
+				0ACD88D68766AE74FD32A21A /* profile.rs */,
+				C8D75B9910C0B7854CBE483C /* speech.rs */,
+				47F8BF4D08718B5F682AB20C /* system.rs */,
+				049B89FC0EBAFE85D0D8461B /* textbooks.rs */,
+			);
+			path = commands;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E9BDF2CBAD03708E271CF3F6 /* parlezvous_iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3FEDDA9F585FC155A1FA0274 /* Build configuration list for PBXNativeTarget "parlezvous_iOS" */;
+			buildPhases = (
+				8291D82FB0F5E5D7B0278F33 /* Build Rust Code */,
+				977A882903AF67BB148E9D84 /* Sources */,
+				CE1616F95167F4259A11D645 /* Resources */,
+				8CA75114B9B4D1610D24F9CF /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = parlezvous_iOS;
+			packageProductDependencies = (
+			);
+			productName = parlezvous_iOS;
+			productReference = 874964F18D48FA761C7D9266 /* parlezvous_iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		60443579BB88995DDE9FA53F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = FC22B25567376A11A1D27E99 /* Build configuration list for PBXProject "parlezvous" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 07AFA61E408586CC8F438D6C;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = BF705486A4FD7A3D12387B62 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E9BDF2CBAD03708E271CF3F6 /* parlezvous_iOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		CE1616F95167F4259A11D645 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9F2EC1109245184CAA61AA6C /* Assets.xcassets in Resources */,
+				1FC58202315239F716BE35F9 /* LaunchScreen.storyboard in Resources */,
+				10CAB4A601BAA0C07C45B5A8 /* assets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		8291D82FB0F5E5D7B0278F33 /* Build Rust Code */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build Rust Code";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Externals/x86_64/${CONFIGURATION}/libapp.a",
+				"$(SRCROOT)/Externals/arm64/${CONFIGURATION}/libapp.a",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "bun tauri ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${SDKROOT:?} --framework-search-paths \"${FRAMEWORK_SEARCH_PATHS:?}\" --header-search-paths \"${HEADER_SEARCH_PATHS:?}\" --gcc-preprocessor-definitions \"${GCC_PREPROCESSOR_DEFINITIONS:-}\" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:?}";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		977A882903AF67BB148E9D84 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				490F2F8052A0176B38AF668C /* main.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		0DFB237F2F54E1F67721B1C8 /* debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ARCHS = (
+					arm64,
+				);
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = parlezvous_iOS/parlezvous_iOS.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_BITCODE = NO;
+				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\".\"",
+				);
+				INFOPLIST_FILE = parlezvous_iOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME) $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME) $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.user.parlezvous;
+				PRODUCT_NAME = "parlezvous";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
+			};
+			name = debug;
+		};
+		14F8A96B04B10BC19BC12417 /* debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = debug;
+		};
+		57D15E76D1839E0ED1B7471B /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ARCHS = (
+					arm64,
+				);
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = parlezvous_iOS/parlezvous_iOS.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_BITCODE = NO;
+				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\".\"",
+				);
+				INFOPLIST_FILE = parlezvous_iOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME) $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME) $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.user.parlezvous;
+				PRODUCT_NAME = "parlezvous";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
+			};
+			name = release;
+		};
+		D3EBD742F97C3204E271165F /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3FEDDA9F585FC155A1FA0274 /* Build configuration list for PBXNativeTarget "parlezvous_iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0DFB237F2F54E1F67721B1C8 /* debug */,
+				57D15E76D1839E0ED1B7471B /* release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = debug;
+		};
+		FC22B25567376A11A1D27E99 /* Build configuration list for PBXProject "parlezvous" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				14F8A96B04B10BC19BC12417 /* debug */,
+				D3EBD742F97C3204E271165F /* release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 60443579BB88995DDE9FA53F /* Project object */;
+}

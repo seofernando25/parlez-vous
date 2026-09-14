@@ -78,7 +78,7 @@ impl<R: Runtime> TtsProvider for SupertonicTtsAdapter<R> {
             text: text.to_string(),
             lang: language.to_string(),
             speed,
-            steps: 10,
+            steps: 6,
             voice_style: settings.supertonic_voice_style,
         };
 

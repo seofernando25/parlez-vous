@@ -1,4 +1,4 @@
-use crate::ai::{GradingVariables, JournalResponse, JournalVariables, LlmProvider};
+use crate::ai::{GradingVariables, JournalProvider, JournalResponse, JournalVariables};
 use crate::db::VocabId;
 use rusqlite::Connection;
 use std::sync::{Arc, Mutex};
@@ -12,11 +12,14 @@ pub struct DbVocabItem {
     pub is_character: bool,
 }
 
-pub async fn process_journal_generation(
+pub async fn process_journal_generation<P>(
     db: Arc<Mutex<Connection>>,
-    ai: Arc<dyn LlmProvider + Send + Sync>,
+    ai: Arc<P>,
     variables: JournalVariables,
-) -> Result<(JournalResponse, Vec<DbVocabItem>), String> {
+) -> Result<(JournalResponse, Vec<DbVocabItem>), String>
+where
+    P: JournalProvider + Send + Sync + ?Sized,
+{
     let mood = variables.mood.clone();
     let weather = variables.weather.clone();
     let activity = variables.activity.clone();
@@ -63,11 +66,14 @@ pub async fn process_journal_generation(
     Ok((response, db_vocab_chips))
 }
 
-pub async fn process_journal_grading(
+pub async fn process_journal_grading<P>(
     db: Arc<Mutex<Connection>>,
-    ai: Arc<dyn LlmProvider + Send + Sync>,
+    ai: Arc<P>,
     variables: GradingVariables,
-) -> Result<(JournalResponse, Vec<DbVocabItem>), String> {
+) -> Result<(JournalResponse, Vec<DbVocabItem>), String>
+where
+    P: JournalProvider + Send + Sync + ?Sized,
+{
     let language = variables.language.clone();
 
     let response = ai.grade_custom_journal(variables).await?;

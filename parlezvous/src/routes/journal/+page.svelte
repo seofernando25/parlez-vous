@@ -7,6 +7,7 @@
     import toast from 'svelte-french-toast';
     import { playSmartTTS } from '$lib/tts';
     import { marked } from 'marked';
+    import { Sparkles, PencilLine, Volume2, Plus, LoaderCircle } from 'lucide-svelte';
     import { timeTracker } from '$lib/state/timeTracker.svelte.ts';
 
     let selectedMoods = $state(['Happy']);
@@ -127,159 +128,83 @@
     }
 </script>
 
-<div class="max-w-6xl mx-auto p-6 flex flex-col md:flex-row gap-8">
-    <!-- Left Column: Controls -->
-    <div class="w-full md:w-1/3 space-y-6 bg-zinc-900 p-6 rounded-2xl border border-zinc-800 shadow-xl flex flex-col">
-        <div>
-            <h2 class="text-2xl font-bold text-yellow-200">Journal</h2>
-            <p class="text-xs text-zinc-500 mt-1">{settingsState.targetLanguage} · {settingsState.skillLevel}</p>
+<div class="app-page">
+    <header class="page-heading">
+        <div><h1 class="page-title">Journal</h1><p class="page-subtitle">{settingsState.targetLanguage} · {settingsState.skillLevel}</p></div>
+        <div class="mode-switch" aria-label="Journal mode">
+            <button class:active={!isCustomMode} onclick={() => isCustomMode = false} title="Prompted journal" aria-label="Prompted journal"><Sparkles size={18} /></button>
+            <button class:active={isCustomMode} onclick={() => isCustomMode = true} title="Free write" aria-label="Free write"><PencilLine size={18} /></button>
         </div>
-        
-        <div class="flex gap-2 p-1 bg-zinc-950 rounded-xl border border-zinc-800">
-            <button 
-                class="flex-1 py-2 text-sm font-bold rounded-lg transition-colors {!isCustomMode ? 'bg-zinc-800 text-yellow-200' : 'text-zinc-500 hover:text-zinc-300'}"
-                onclick={() => isCustomMode = false}
-            >
-                Prompts
+    </header>
+
+    <div class="journal-layout">
+        <section class="journal-input">
+            {#if isCustomMode}
+                <textarea bind:value={customEntry} placeholder={`Write in ${settingsState.targetLanguage}…`} aria-label="Journal entry"></textarea>
+            {:else}
+                <div class="prompt-group"><span>Mood</span><div>{#each moods as item}<button class:active={selectedMoods.includes(item)} onclick={() => selectedMoods = toggleSelection(selectedMoods, item)}>{item}</button>{/each}</div></div>
+                <div class="prompt-group"><span>Weather</span><div>{#each weathers as item}<button class:active={selectedWeathers.includes(item)} onclick={() => selectedWeathers = toggleSelection(selectedWeathers, item)}>{item}</button>{/each}</div></div>
+                <div class="prompt-group"><span>Activity</span><div>{#each activities as item}<button class:active={selectedActivities.includes(item)} onclick={() => selectedActivities = toggleSelection(selectedActivities, item)}>{item}</button>{/each}</div></div>
+            {/if}
+
+            <button class="primary-action" onclick={isCustomMode ? gradeJournal : generateJournal} disabled={isGenerating || (isCustomMode && !customEntry.trim())}>
+                {#if isGenerating}<LoaderCircle size={17} class="animate-spin" />{:else}<Sparkles size={17} />{/if}
+                <span>{isGenerating ? 'Working…' : isCustomMode ? 'Review' : 'Generate'}</span>
             </button>
-            <button 
-                class="flex-1 py-2 text-sm font-bold rounded-lg transition-colors {isCustomMode ? 'bg-zinc-800 text-yellow-200' : 'text-zinc-500 hover:text-zinc-300'}"
-                onclick={() => isCustomMode = true}
-            >
-                Free Write
-            </button>
-        </div>
+        </section>
 
-        {#if isCustomMode}
-            <div class="flex-1 flex flex-col min-h-[300px]">
-                <textarea 
-                    id="customEntry"
-                    bind:value={customEntry}
-                    placeholder="Write in {settingsState.targetLanguage}..."
-                    class="flex-1 w-full bg-zinc-950 border border-zinc-700 text-zinc-100 rounded-xl p-4 focus:outline-none focus:border-yellow-200 transition-colors resize-none"
-                ></textarea>
-            </div>
-        {:else}
-            <div class="space-y-6 flex-1">
-                <div>
-                    <h3 class="text-sm font-medium text-zinc-300 mb-2 uppercase tracking-widest">Moods</h3>
-                    <div class="flex flex-wrap gap-2">
-                        {#each moods as m}
-                            <button 
-                                class="px-4 py-2 rounded-full text-sm font-medium transition-colors {selectedMoods.includes(m) ? 'bg-yellow-200 text-zinc-900 shadow-[0_0_10px_rgba(253,253,150,0.3)]' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'}"
-                                onclick={() => selectedMoods = toggleSelection(selectedMoods, m)}
-                            >
-                                {m}
-                            </button>
+        <section class="journal-output" aria-live="polite">
+            {#if isGenerating}
+                <div class="output-empty"><LoaderCircle size={24} class="animate-spin" /></div>
+            {:else if journalResult}
+                <article class="entry-result">
+                    <button class="icon-button listen" onclick={() => playSmartTTS(journalResult!.generated_target_text, settingsState.ttsServerUrl, undefined, settingsState.targetLanguage, settingsState.ttsProvider)} title="Listen" aria-label="Listen"><Volume2 size={18} /></button>
+                    <p class="target-entry">{journalResult.generated_target_text}</p>
+                    <p class="translation">{journalResult.native_translation}</p>
+                    {#if isCustomMode && journalResult.feedback}<div class="feedback">{@html marked.parse(journalResult.feedback)}</div>{/if}
+                </article>
+
+                {#if vocabChips.length}
+                    <div class="vocab-list">
+                        {#each vocabChips as chip}
+                            <div class="vocab-chip"><button onclick={() => addToSrs(chip.id)} title="Save word" aria-label={`Save ${chip.target_text}`}><Plus size={15} /></button><strong>{chip.target_text}</strong><span>{chip.native_text}</span><button onclick={() => playSmartTTS(chip.target_text, settingsState.ttsServerUrl, undefined, settingsState.targetLanguage, settingsState.ttsProvider)} title="Listen" aria-label={`Listen to ${chip.target_text}`}><Volume2 size={15} /></button></div>
                         {/each}
-                    </div>
-                </div>
-
-                <div>
-                    <h3 class="text-sm font-medium text-zinc-300 mb-2 uppercase tracking-widest">Weather</h3>
-                    <div class="flex flex-wrap gap-2">
-                        {#each weathers as w}
-                            <button 
-                                class="px-4 py-2 rounded-full text-sm font-medium transition-colors {selectedWeathers.includes(w) ? 'bg-yellow-200 text-zinc-900 shadow-[0_0_10px_rgba(253,253,150,0.3)]' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'}"
-                                onclick={() => selectedWeathers = toggleSelection(selectedWeathers, w)}
-                            >
-                                {w}
-                            </button>
-                        {/each}
-                    </div>
-                </div>
-
-                <div>
-                    <h3 class="text-sm font-medium text-zinc-300 mb-2 uppercase tracking-widest">Activities</h3>
-                    <div class="flex flex-wrap gap-2">
-                        {#each activities as a}
-                            <button 
-                                class="px-4 py-2 rounded-full text-sm font-medium transition-colors {selectedActivities.includes(a) ? 'bg-yellow-200 text-zinc-900 shadow-[0_0_10px_rgba(253,253,150,0.3)]' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'}"
-                                onclick={() => selectedActivities = toggleSelection(selectedActivities, a)}
-                            >
-                                {a}
-                            </button>
-                        {/each}
-                    </div>
-                </div>
-            </div>
-        {/if}
-
-        <button 
-            class="w-full mt-4 bg-yellow-200 hover:bg-yellow-300 disabled:opacity-50 text-zinc-900 font-bold py-3 px-6 rounded-xl transition-all shadow-[0_0_15px_rgba(253,253,150,0.2)]"
-            onclick={isCustomMode ? gradeJournal : generateJournal}
-            disabled={isGenerating || (isCustomMode && !customEntry.trim()) || (!isCustomMode && selectedMoods.length === 0 && selectedWeathers.length === 0 && selectedActivities.length === 0)}
-        >
-            {isGenerating ? 'Generating...' : (isCustomMode ? 'Grade' : 'Generate')}
-        </button>
-    </div>
-
-    <!-- Right Column: Results -->
-    <div class="w-full md:w-2/3 flex flex-col gap-6">
-        {#if isGenerating}
-            <div class="flex-1 flex items-center justify-center bg-zinc-900/50 rounded-2xl border border-dashed border-zinc-700">
-                <div class="animate-pulse flex flex-col items-center">
-                    <div class="w-12 h-12 border-4 border-yellow-200 border-t-transparent rounded-full animate-spin"></div>
-                    <p class="mt-4 text-zinc-400 font-medium">Generating...</p>
-                </div>
-            </div>
-        {:else if journalResult}
-            <div class="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 shadow-xl prose prose-invert max-w-none relative">
-                <h3 class="text-xl font-medium text-yellow-200 mb-4 border-b border-zinc-800 pb-2">{settingsState.targetLanguage}</h3>
-                <button 
-                    class="absolute top-8 right-8 text-yellow-200 hover:text-yellow-400 bg-zinc-800 p-2 rounded-full transition-colors border border-zinc-700 hover:border-yellow-200/50"
-                    onclick={() => playSmartTTS(journalResult!.generated_target_text, settingsState.ttsServerUrl, undefined, settingsState.targetLanguage)}
-                    title="Play Audio"
-                >
-                    ▶
-                </button>
-                <p class="text-lg text-zinc-100 leading-relaxed pr-10">{journalResult.generated_target_text}</p>
-                
-                <h3 class="text-xl font-medium text-zinc-400 mt-8 mb-4 border-b border-zinc-800 pb-2">Translation</h3>
-                <p class="text-zinc-300 italic">{journalResult.native_translation}</p>
-
-                {#if isCustomMode && journalResult.feedback}
-                    <div class="mt-8 p-6 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
-                        <h3 class="text-sm font-bold text-blue-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                            Feedback
-                        </h3>
-                        <div class="prose prose-invert prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-a:text-yellow-200 text-zinc-200 leading-relaxed italic">
-                            {@html marked.parse(journalResult.feedback)}
-                        </div>
                     </div>
                 {/if}
-            </div>
-
-            {#if vocabChips.length > 0}
-                <div class="bg-zinc-900/50 p-6 rounded-2xl border border-zinc-800">
-                    <h3 class="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-3">Vocabulary</h3>
-                    <div class="flex flex-wrap gap-3">
-                        {#each vocabChips as chip}
-                            <div class="group flex items-center bg-zinc-800 border border-zinc-700 hover:border-yellow-200/50 rounded-lg transition-all overflow-hidden">
-                                <button 
-                                    class="px-4 py-2 hover:bg-zinc-700 flex items-center gap-2"
-                                    onclick={() => addToSrs(chip.id)}
-                                    title="Add to SRS"
-                                >
-                                    <span class="font-bold text-yellow-200">{chip.target_text}</span>
-                                    <span class="text-zinc-500 group-hover:text-zinc-300 transition-colors">— {chip.native_text}</span>
-                                </button>
-                                <button 
-                                    class="px-3 py-2 bg-zinc-700/50 hover:bg-zinc-600 text-yellow-200/70 hover:text-yellow-200 transition-colors border-l border-zinc-700/50"
-                                    onclick={() => playSmartTTS(chip.target_text, settingsState.ttsServerUrl, undefined, settingsState.targetLanguage)}
-                                    title="Play Audio"
-                                >
-                                    🔊
-                                </button>
-                            </div>
-                        {/each}
-                    </div>
-                </div>
+            {:else}
+                <div class="output-empty"><Sparkles size={24} /></div>
             {/if}
-        {:else}
-            <div class="flex-1 flex items-center justify-center bg-zinc-900/20 rounded-2xl border border-dashed border-zinc-800">
-                <p class="text-zinc-600 text-sm">Ready</p>
-            </div>
-        {/if}
+        </section>
     </div>
 </div>
+
+<style>
+    .mode-switch { display:flex; gap:.25rem; padding:.25rem; border:1px solid var(--pv-border); border-radius:.85rem; background:var(--pv-surface); }
+    .mode-switch button { display:grid; width:2.4rem; height:2.4rem; place-items:center; border:0; border-radius:.65rem; background:transparent; color:var(--pv-subtle); cursor:pointer; }
+    .mode-switch button.active { background:var(--pv-accent-soft); color:var(--pv-accent-strong); }
+    .journal-layout { display:grid; gap:1.25rem; }
+    .journal-input { min-width:0; }
+    .journal-input textarea { width:100%; min-height:16rem; box-sizing:border-box; resize:vertical; border:1px solid var(--pv-border); border-radius:1rem; background:var(--pv-surface); color:var(--pv-foreground); padding:1rem; font:inherit; line-height:1.6; outline:none; }
+    .journal-input textarea:focus { border-color:var(--pv-accent); }
+    .prompt-group + .prompt-group { margin-top:1rem; }
+    .prompt-group > span { display:block; margin-bottom:.45rem; color:var(--pv-subtle); font-size:.68rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+    .prompt-group > div { display:flex; flex-wrap:wrap; gap:.4rem; }
+    .prompt-group button { border:1px solid var(--pv-border); border-radius:999px; background:transparent; color:var(--pv-muted); padding:.45rem .7rem; font-size:.78rem; font-weight:650; cursor:pointer; }
+    .prompt-group button.active { border-color:transparent; background:var(--pv-accent-soft); color:var(--pv-accent-strong); }
+    .primary-action { display:flex; width:100%; min-height:2.85rem; align-items:center; justify-content:center; gap:.45rem; margin-top:1.25rem; border:0; border-radius:.85rem; background:var(--pv-accent); color:var(--pv-on-accent); font-weight:800; cursor:pointer; }
+    .primary-action:disabled { opacity:.45; cursor:not-allowed; }
+    .journal-output { min-width:0; border-top:1px solid var(--pv-border); padding-top:1.25rem; }
+    .output-empty { display:grid; min-height:12rem; place-items:center; color:var(--pv-subtle); }
+    .entry-result { position:relative; }
+    .listen { position:absolute; top:0; right:0; }
+    .target-entry { margin:0; padding-right:3rem; color:var(--pv-foreground); font-size:1.08rem; line-height:1.75; }
+    .translation { margin:1rem 0 0; color:var(--pv-muted); font-size:.88rem; font-style:italic; line-height:1.6; }
+    .feedback { margin-top:1.2rem; border-left:2px solid var(--pv-info); padding-left:1rem; color:var(--pv-muted); font-size:.86rem; line-height:1.6; }
+    .vocab-list { display:flex; flex-wrap:wrap; gap:.45rem; margin-top:1.3rem; }
+    .vocab-chip { display:flex; align-items:center; gap:.45rem; border:1px solid var(--pv-border); border-radius:999px; padding:.25rem .35rem; background:var(--pv-surface); }
+    .vocab-chip button { display:grid; width:1.75rem; height:1.75rem; place-items:center; border:0; border-radius:999px; background:transparent; color:var(--pv-subtle); cursor:pointer; }
+    .vocab-chip button:hover { color:var(--pv-accent-strong); background:var(--pv-surface-raised); }
+    .vocab-chip strong { color:var(--pv-foreground); font-size:.78rem; }
+    .vocab-chip span { color:var(--pv-subtle); font-size:.75rem; }
+    @media (min-width:800px) { .journal-layout { grid-template-columns:minmax(16rem, .8fr) minmax(0, 1.4fr); gap:2rem; } .journal-output { border-top:0; border-left:1px solid var(--pv-border); padding-top:0; padding-left:2rem; } }
+</style>

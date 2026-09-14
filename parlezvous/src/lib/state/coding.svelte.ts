@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { getThemes, getRandomTheme } from '../coding/utils';
 import { settingsState } from './settings.svelte';
 import toast from 'svelte-french-toast';
+import { getModelCapabilities } from '$lib/ai/capabilities';
 
 export type CodingQueueItem = {
     question_type: string;
@@ -62,8 +63,8 @@ export async function maintainCodingQueue() {
             }
             const theme = getRandomTheme(codingState.themes, settingsState.codingThemeCategory);
             
-            const isLitert = settingsState.activeModel.includes('litert');
-            const puzzleType = isLitert ? "speedrun" : (Math.random() > 0.5 ? "keystone" : "speedrun");
+const capabilities = getModelCapabilities(settingsState.activeModel);
+            const puzzleType = capabilities.supportsKeystonePuzzles && Math.random() > 0.5 ? "keystone" : "speedrun";
             
             console.log(`[maintainCodingQueue] Requesting puzzle... (Queue size: ${codingState.queue.length}, Model: ${settingsState.activeModel})`);
             const rawJson = await invoke<string>('generate_coding_puzzle', {

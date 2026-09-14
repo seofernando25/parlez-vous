@@ -1,4 +1,4 @@
-use crate::ai::LlmProvider;
+use crate::ai::EmbeddingProvider;
 use rusqlite::Connection;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
@@ -52,7 +52,7 @@ fn chunk_text(text: &str, max_len: usize) -> Vec<String> {
 
 pub async fn ingest_pdf(
     db: Arc<Mutex<Connection>>,
-    ai: Arc<dyn LlmProvider + Send + Sync>,
+    ai: Arc<dyn EmbeddingProvider + Send + Sync>,
     file_path: String,
     model: String,
 ) -> Result<(), String> {
@@ -174,7 +174,7 @@ pub async fn list_textbooks(db: Arc<Mutex<Connection>>) -> Result<Vec<String>, S
 
 pub async fn query_context(
     db: Arc<Mutex<Connection>>,
-    ai: Arc<dyn LlmProvider + Send + Sync>,
+    ai: Arc<dyn EmbeddingProvider + Send + Sync>,
     document_name: String,
     query: String,
     model: String,

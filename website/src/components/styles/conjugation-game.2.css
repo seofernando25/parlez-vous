@@ -1,0 +1,111 @@
+.game-card .option-btn:not(.disabled):hover {
+        background: rgba(63, 63, 70, 0.6);
+        border-color: #a1a1aa;
+        transform: scale(1.01);
+    }
+
+    .game-card .option-btn.correct {
+        background: rgba(16, 185, 129, 0.15);
+        border-color: rgb(16, 185, 129);
+        color: rgb(52, 211, 153);
+    }
+
+    .game-card .option-btn.incorrect {
+        background: rgba(239, 68, 68, 0.15);
+        border-color: rgb(239, 68, 68);
+        color: rgb(248, 113, 113);
+    }
+
+    .game-card .status-icon {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+    }
+
+    .game-card .next-btn {
+        margin-top: 0.5rem;
+        animation: pulse 2s infinite;
+    }
+
+    /* Completed screen */
+    .game-card .completed-screen {
+        text-align: center;
+    }
+
+    .game-card .completed-icon {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .game-card .score-card {
+        background: rgba(253, 253, 150, 0.05);
+        border: 1px solid rgba(253, 253, 150, 0.15);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .game-card .score-num {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #fdfd96;
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+
+    .game-card .score-card p {
+        margin: 0;
+        font-weight: 500;
+        color: #d4d4d8;
+    }
+
+    .game-card .cta-desc {
+        color: #a1a1aa;
+        margin-bottom: 2rem;
+    }
+
+    .game-card .completed-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .game-card .download-apk-btn {
+        font-size: 1rem;
+        padding: 1rem 2rem;
+    }
+
+    .game-card .desktop-promo {
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+        color: #a1a1aa;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        align-items: center;
+        text-align: center;
+    }
+
+    .game-card .desktop-link {
+        color: #fdfd96;
+        text-decoration: underline;
+        font-weight: 600;
+        transition: color 0.2s;
+    }
+
+    .game-card .desktop-link:hover {
+        color: #fcfca8;
+    }
+
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 4px 14px rgba(253, 253, 150, 0.3);
+        }
+        50% {
+            box-shadow: 0 4px 22px rgba(253, 253, 150, 0.55);
+        }
+        100% {
+            box-shadow: 0 4px 14px rgba(253, 253, 150, 0.3);
+        }
+    }

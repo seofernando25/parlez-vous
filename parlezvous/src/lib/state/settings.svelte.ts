@@ -1,3 +1,4 @@
+import type { TtsProviderPolicy } from '$lib/media/tts-policy';
 import { invoke } from '@tauri-apps/api/core';
 
 export const settingsState = $state({
@@ -15,12 +16,13 @@ export const settingsState = $state({
     codingThemeCategory: 'All',
     activeVrm: 'avatar.vrm',
     supertonicVoiceStyle: 'voice_styles/F1.json',
+    ttsProvider: 'auto' as TtsProviderPolicy,
     isLoaded: false
 });
 
 export async function loadSettings() {
     try {
-        const settings = await invoke<{ target_language: string, tts_server_url: string, asr_server_url: string, ollama_server_url: string, embedding_model: string, active_model: string, huggingface_token: string | null, litert_accelerator: string, litert_max_tokens: number, target_programming_language: string, coding_theme_category: string, active_vrm: string, supertonic_voice_style: string }>('get_settings');
+        const settings = await invoke<{ target_language: string, tts_server_url: string, asr_server_url: string, ollama_server_url: string, embedding_model: string, active_model: string, huggingface_token: string | null, litert_accelerator: string, litert_max_tokens: number, target_programming_language: string, coding_theme_category: string, active_vrm: string, supertonic_voice_style: string, tts_provider: TtsProviderPolicy }>('get_settings');
         settingsState.targetLanguage = settings.target_language;
         settingsState.ttsServerUrl = settings.tts_server_url;
         settingsState.asrServerUrl = settings.asr_server_url;
@@ -34,6 +36,7 @@ export async function loadSettings() {
         settingsState.codingThemeCategory = settings.coding_theme_category;
         settingsState.activeVrm = settings.active_vrm;
         settingsState.supertonicVoiceStyle = settings.supertonic_voice_style;
+        settingsState.ttsProvider = settings.tts_provider || 'auto';
 
         const skillLevel = await invoke<string>('get_user_skill_level');
         settingsState.skillLevel = skillLevel;
@@ -62,7 +65,8 @@ export async function saveSettings() {
                 target_programming_language: settingsState.targetProgrammingLanguage,
                 coding_theme_category: settingsState.codingThemeCategory,
                 active_vrm: settingsState.activeVrm,
-                supertonic_voice_style: settingsState.supertonicVoiceStyle
+                supertonic_voice_style: settingsState.supertonicVoiceStyle,
+                tts_provider: settingsState.ttsProvider
             }
         });
 

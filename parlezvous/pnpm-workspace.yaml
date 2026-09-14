@@ -1,5 +1,0 @@
-packages:
-  - 'src-tauri'
-  - 'plugins/*'
-allowBuilds:
-  esbuild: false

@@ -15,3 +15,5 @@ static/vrm/wom.vrm
 static/vrm/green.vrm
 # Ignore proprietary AI runtimes
 libraries/**/*.so
+
+svelte_errors.log

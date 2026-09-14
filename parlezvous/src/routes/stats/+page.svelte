@@ -1,107 +1,71 @@
 <script lang="ts">
     import { invoke } from '@tauri-apps/api/core';
     import { onMount } from 'svelte';
-    import { settingsState } from '$lib/state/settings.svelte.ts';
+    import { ChevronLeft, Clock3 } from 'lucide-svelte';
+    import { settingsState } from '$lib/state/settings.svelte';
 
-    interface TenseStat {
-        tense: string;
-        total: number;
-        correct: number;
-    }
-
-    interface Curriculum {
-        active_seconds: number;
-    }
-
+    interface TenseStat { tense: string; total: number; correct: number; }
     let tenseStats = $state<TenseStat[]>([]);
     let activeSeconds = $state(0);
     let isLoading = $state(true);
-
-    let activeHours = $derived(Math.floor(activeSeconds / 3600));
-    let activeMinutes = $derived(Math.floor((activeSeconds % 3600) / 60));
+    let studyTime = $derived(activeSeconds < 3600 ? `${Math.floor(activeSeconds / 60)} min` : `${Math.floor(activeSeconds / 3600)}h ${Math.floor((activeSeconds % 3600) / 60)}m`);
 
     onMount(async () => {
-        if (!settingsState.isLoaded) {
-            await new Promise(r => setTimeout(r, 500));
-        }
-        
+        if (!settingsState.isLoaded) await new Promise(resolve => setTimeout(resolve, 100));
         try {
-            const lang = settingsState.targetLanguage;
-            
-            const curriculum = await invoke<Curriculum>('get_curriculum', { language: lang });
+            const curriculum = await invoke<{ active_seconds: number }>('get_curriculum', { language: settingsState.targetLanguage });
             activeSeconds = curriculum.active_seconds || 0;
-
-            tenseStats = await invoke<TenseStat[]>('get_all_tense_stats', { language: lang });
-        } catch (e) {
-            console.error("Failed to load stats:", e);
-        } finally {
-            isLoading = false;
-        }
+            tenseStats = await invoke<TenseStat[]>('get_all_tense_stats', { language: settingsState.targetLanguage });
+        } catch (error) { console.error('Failed to load stats:', error); }
+        finally { isLoading = false; }
     });
 </script>
 
-<div class="h-full w-full flex flex-col items-center justify-start p-4 md:p-8 overflow-y-auto">
-    <div class="w-full max-w-4xl flex flex-col gap-8">
-        <div class="flex flex-col gap-2">
-            <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white drop-shadow-md">
-                Your <span class="text-yellow-400 bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-yellow-500">Stats</span>
-            </h1>
-            <p class="text-zinc-400 text-sm md:text-base">
-                Track your progress in {settingsState.targetLanguage}.
-            </p>
+<div class="app-page app-page--narrow">
+    <header class="page-heading">
+        <div class="flex items-center gap-3">
+            <a class="icon-button" href="/profile" aria-label="Back to profile" title="Profile"><ChevronLeft size={19} /></a>
+            <div><h1 class="page-title">Progress</h1><p class="page-subtitle">{settingsState.targetLanguage}</p></div>
         </div>
+    </header>
 
-        {#if isLoading}
-            <div class="flex items-center justify-center py-20">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-200"></div>
-            </div>
-        {:else}
-            <!-- Time Spent Card -->
-            <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-xl flex items-center gap-6">
-                <div class="w-16 h-16 rounded-full bg-yellow-400/20 flex items-center justify-center text-yellow-400 text-3xl">
-                    ⏱️
-                </div>
-                <div class="flex flex-col">
-                    <span class="text-zinc-400 text-sm font-medium uppercase tracking-wider">Total Time Learning</span>
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-4xl font-bold text-zinc-100">{activeHours}</span>
-                        <span class="text-zinc-500 font-medium">hrs</span>
-                        <span class="text-4xl font-bold text-zinc-100">{activeMinutes}</span>
-                        <span class="text-zinc-500 font-medium">mins</span>
-                    </div>
-                </div>
-            </div>
+    {#if isLoading}
+        <div class="grid min-h-64 place-items-center"><div class="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent"></div></div>
+    {:else}
+        <section class="study-total"><Clock3 size={20} /><div><strong>{studyTime}</strong><span>Study time</span></div></section>
 
-            <!-- Tense Accuracy Section -->
-            <div class="flex flex-col gap-4">
-                <h2 class="text-xl font-bold text-zinc-100">Tense Accuracy</h2>
-                
-                {#if tenseStats.length === 0}
-                    <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-8 text-center text-zinc-500">
-                        No conjugation exercises completed yet.
-                    </div>
-                {:else}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {#each tenseStats as stat}
-                            {@const pct = stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0}
-                            <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 shadow-lg flex flex-col gap-3">
-                                <div class="flex items-center justify-between">
-                                    <h3 class="text-lg font-bold text-zinc-200 capitalize">{stat.tense}</h3>
-                                    <span class="text-sm font-bold {pct >= 80 ? 'text-green-400' : pct >= 50 ? 'text-yellow-400' : 'text-red-400'}">
-                                        {pct}%
-                                    </span>
-                                </div>
-                                <div class="w-full bg-zinc-800 rounded-full h-2.5 overflow-hidden">
-                                    <div class="h-2.5 rounded-full transition-all duration-500 {pct >= 80 ? 'bg-green-400' : pct >= 50 ? 'bg-yellow-400' : 'bg-red-400'}" style="width: {pct}%"></div>
-                                </div>
-                                <div class="text-xs text-zinc-500 font-medium text-right mt-1">
-                                    {stat.correct} / {stat.total} correct
-                                </div>
-                            </div>
-                        {/each}
-                    </div>
-                {/if}
-            </div>
-        {/if}
-    </div>
+        <section class="mt-8">
+            <h2 class="section-title">Conjugation</h2>
+            {#if tenseStats.length === 0}
+                <p class="empty-copy">No results yet.</p>
+            {:else}
+                <div class="stat-list">
+                    {#each tenseStats as stat}
+                        {@const pct = stat.total ? Math.round(stat.correct / stat.total * 100) : 0}
+                        <div class="stat-row">
+                            <div class="stat-label"><span>{stat.tense}</span><strong>{pct}%</strong></div>
+                            <div class="progress-track"><div style={`width:${pct}%`}></div></div>
+                            <small>{stat.correct}/{stat.total}</small>
+                        </div>
+                    {/each}
+                </div>
+            {/if}
+        </section>
+    {/if}
 </div>
+
+<style>
+    .study-total { display:flex; align-items:center; gap:.8rem; padding:1rem 0; border-block:1px solid var(--pv-border); color:var(--pv-accent-strong); }
+    .study-total div { display:flex; flex-direction:column; }
+    .study-total strong { color:var(--pv-foreground); font-size:1.35rem; }
+    .study-total span { color:var(--pv-subtle); font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; }
+    .section-title { margin:0 0 .9rem; color:var(--pv-foreground); font-size:.92rem; font-weight:800; }
+    .empty-copy { color:var(--pv-subtle); font-size:.86rem; }
+    .stat-list { display:flex; flex-direction:column; }
+    .stat-row { padding:.85rem 0; border-bottom:1px solid var(--pv-border); }
+    .stat-label { display:flex; justify-content:space-between; gap:1rem; color:var(--pv-foreground); font-size:.85rem; text-transform:capitalize; }
+    .stat-label strong { font-size:.8rem; }
+    .progress-track { height:4px; margin:.55rem 0 .3rem; overflow:hidden; border-radius:999px; background:var(--pv-surface-raised); }
+    .progress-track div { height:100%; border-radius:inherit; background:var(--pv-accent-strong); }
+    .stat-row small { color:var(--pv-subtle); font-size:.68rem; }
+</style>

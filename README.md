@@ -24,62 +24,95 @@ Language learning is a wonderful way to expand the reachable cities of our cogni
 
 ## 🚀 Quick Start Installation
 
-For full deployment instructions, please reference the [Installation Guide](file:///home/user/Documents/lang/parlezvous/docs/installation.md). Below is a quick overview:
+See the [Installation Guide](docs/installation.md) for the complete setup. A clean checkout now builds without training the optional handwriting model first.
 
-Download APK in the releases tab for a quick mobile start. 
-
-### 1. Prerequisites
-- Clone the repository
-- Install [uv](https://github.com/astral-sh/uv) (Python packaging)
-- Install [Ollama](https://ollama.com/) (Local AI inference)
-
-### 2. HangulNist (Handwriting Recognition Model)
-1. Build the Jamo recognition model:
-   ```bash
-   uv sync && uv run main.py
-   ```
-2. Copy the built model into the Tauri source:
-   ```bash
-   cp character_model.onnx.data ../parlezvous/src-tauri/models/
-   cp character_model.onnx ../parlezvous/src-tauri/models/
-   ```
-
-### 3. Parlez-vous App Setup
-1. Install [pnpm](https://pnpm.io/) and [Rust](https://www.rust-lang.org/)
-2. Install UI dependencies:
-   ```bash
-   pnpm i
-   ```
-3. *(Linux only)* You may need system libraries:
-   ```bash
-   sudo apt install libglib2.0-dev libgtk-3-dev libjavascriptcoregtk-4.1-dev libsoup-3.0-dev libwebkitgtk-6.0-dev libssl-dev libwebkit2gtk-4.1-dev
-   ```
-
-### 4. Android Compilation (Optional)
-Make sure Android Studio, SDK, and Kotlin are installed, export paths, then build:
-
-Before building, you must fetch the proprietary device runtimes:
-```bash
-./parlezvous/libraries/fetch_qualcomm_library.sh
-```
-
-```bash
-export KOTLIN_HOME=/home/user/.sdkman/candidates/kotlin/2.3.21
-export KOTLIN=/home/user/.sdkman/candidates/kotlin/2.3.21/bin/kotlin
-export JAVA_HOME=/home/user/android-studio/jbr/
-export ANDROID_HOME=/home/user/Android/Sdk
-export NDK=/home/user/Android/Sdk/ndk/30.0.14904198
-export JAVA=/usr/bin/java
-
-pnpm tauri android build
-```
-
-### 5. Running AI Helpers
-* **Whisper ASR (Speech-to-Text):** Run `docker compose up` inside the `whisper/` directory.
-* **Qwen3 TTS (Text-to-Speech):** 
+### 1. Client prerequisites
+- Install [Bun](https://bun.sh/) and [Rust](https://www.rust-lang.org/).
+- Clone the repository and install the app dependencies:
   ```bash
+  cd parlezvous
+  bun install
+  bun run verify
+  ```
+  `bun run verify` includes the source-organization gate: authored source files stay at or below 300 LOC.
+- Run the desktop app:
+  ```bash
+  bun tauri dev
+  ```
+
+`uv` is only required for the Python model/services, and Ollama is only required when using the Ollama-backed AI features.
+
+### 2. Handwriting models (optional)
+
+The application can launch without the Hangul ONNX model; only Hangul handwriting recognition is disabled. To enable it:
+
+```bash
+cd hangulnist
+uv sync
+uv run main.py
+```
+
+The Tauri build automatically detects the generated `hangulnist/character_model.onnx` and its external data file. The tracked Cyrillic model is detected the same way.
+
+### 3. Android development
+
+Install Android Studio plus API 36, Platform Tools, Build Tools, command-line tools, and NDK `30.0.14904198`. Add the Android Rust targets:
+
+```bash
+rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
+```
+
+On macOS, the current Gradle wrapper should be run with JDK 21 rather than Android Studio's newer JBR 25:
+
+```bash
+export JAVA_HOME="/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+export ANDROID_SDK_ROOT="$ANDROID_HOME"
+export NDK_HOME="$ANDROID_HOME/ndk/30.0.14904198"
+export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH"
+```
+
+With an AVD running, start the app with its AVD name, for example:
+
+```bash
+bun tauri android dev medium_phone --no-watch
+```
+
+For emulator development, `adb reverse` can make the existing localhost defaults reach services on the Mac:
+
+```bash
+adb reverse tcp:11434 tcp:11434 # Ollama
+adb reverse tcp:8000 tcp:8000   # Whisper ASR
+adb reverse tcp:5050 tcp:5050   # server TTS
+```
+
+The Qualcomm runtime fetch script is only needed when targeting the corresponding proprietary physical-device acceleration path; it is not required to boot the standard ARM64 emulator.
+
+### 4. iOS development
+
+The repository includes the generated Tauri/Xcode project plus minimal Swift bridges for the custom plugins. Install the Apple host tools and Rust targets:
+
+```bash
+brew install xcodegen libimobiledevice cocoapods
+rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios
+```
+
+Build an unsigned Apple-silicon simulator bundle with:
+
+```bash
+bun tauri ios build --debug --target aarch64-sim --no-sign --ci
+```
+
+iOS currently uses server-backed AI/ASR/TTS. LiteRT-LM and Supertonic on-device inference remain Android-only; their iOS bridges report those capabilities as unavailable without blocking the rest of the app.
+
+### 5. Optional AI helpers
+- **Whisper ASR (speech-to-text):** run `docker compose up` inside `whisper/`.
+- **Qwen3 TTS (server text-to-speech):**
+  ```bash
+  cd Qwen3-TTS
   uv run qwen_tts/cli/openai_server.py --port 5050 --checkpoint Qwen3-TTS-12Hz-0.6B-CustomVoice/ --no-flash-attn
   ```
+- **On-device Android:** LiteRT handles supported local LLM workloads and Supertonic handles local TTS when their models are installed from Settings.
 
 ---
 

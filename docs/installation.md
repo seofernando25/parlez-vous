@@ -4,61 +4,162 @@ Set up and configure the various modules of the **Parlez-vous?** ecosystem.
 
 ---
 
-## 1. Desktop & Android Client Compilation
+## 1. Desktop & Mobile Client Compilation
 
-The client application compiles as a desktop application (Linux/Windows/macOS) or an Android APK.
+The client is a Tauri 2 + SvelteKit application. JavaScript tooling uses **Bun** throughout the repository.
 
-### Prerequisites:
-1. **Rust & Cargo**: Install from [rustup.rs](https://rustup.rs).
-2. **Node.js & pnpm**: Install Node.js and run `npm install -g pnpm`.
-3. **System Dependencies (Linux)**:
-   ```bash
-   sudo apt install libglib2.0-dev libgtk-3-dev libjavascriptcoregtk-4.1-dev libsoup-3.0-dev libwebkitgtk-6.0-dev libssl-dev libwebkit2gtk-4.1-dev
-   ```
+### Core prerequisites
 
-### Local Build:
-1. Navigate to the client directory:
-   ```bash
-   cd parlezvous
-   pnpm install
-   ```
-2. Build the Jamo handwriting model (detailed in [Development](file:///home/user/Documents/lang/parlezvous/docs/development.md)) and copy `character_model.onnx` and `character_model.onnx.data` into `parlezvous/src-tauri/models/`.
-3. Run the desktop application in development mode:
-   ```bash
-   pnpm tauri dev
-   ```
+1. **Rust & Cargo**: install with `rustup`.
+2. **Bun**: install from [bun.sh](https://bun.sh/).
+3. **Desktop platform tools**:
+   - macOS: Xcode Command Line Tools.
+   - Linux: the WebKit/GTK packages listed below.
+4. **Handwriting ONNX models are optional at build time.** A clean clone launches without the Hangul model; Hangul recognition reports a clear unavailable-model error until the model is trained/copied. The tracked Cyrillic model under `hangulnist/` is discovered automatically.
 
-### Android APK Build (Optional):
-1. Make sure Android Studio, SDK, and Kotlin are installed, export paths, then build:
-   ```bash
-   export KOTLIN_HOME=/home/user/.sdkman/candidates/kotlin/2.3.21
-   export KOTLIN=/home/user/.sdkman/candidates/kotlin/2.3.21/bin/kotlin
-   export JAVA_HOME=/home/user/android-studio/jbr/
-   export ANDROID_HOME=/home/user/Android/Sdk
-   export NDK=/home/user/Android/Sdk/ndk/30.0.14904198
-   export JAVA=/usr/bin/java
-   ```
+Linux dependencies:
 
-2. **To generate a Signed Release APK (Required for distribution):**
-   By default, `pnpm tauri android build` attempts to build a release APK. To sign it correctly, you must generate a keystore and configure a properties file:
-   
-   First, generate your keystore file:
-   ```bash
-   keytool -genkey -v -keystore ~/upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
-   ```
-   
-   Then, create a file at `parlezvous/src-tauri/gen/android/keystore.properties` containing your passwords and path:
-   ```properties
-   password=your_keystore_password
-   keyAlias=upload
-   storeFile=/home/user/upload-keystore.jks
-   ```
-   *(Note: `keystore.properties` is already in `.gitignore` to prevent leaking your credentials).*
+```bash
+sudo apt install libglib2.0-dev libgtk-3-dev libjavascriptcoregtk-4.1-dev \
+  libsoup-3.0-dev libwebkitgtk-6.0-dev libssl-dev libwebkit2gtk-4.1-dev
+```
 
-3. Build the APK package:
-   ```bash
-   pnpm tauri android build --apk
-   ```
+### Desktop development
+
+```bash
+cd parlezvous
+bun install
+bun run verify
+bun tauri dev
+```
+
+`bun run verify` runs Svelte diagnostics, Vitest, and the production frontend build.
+
+### Android development on macOS
+
+This is the configuration used to verify an API 36 ARM64 emulator build in September 2026.
+
+Install the host tools:
+
+```bash
+brew install bun openjdk@21
+brew install --cask android-studio android-commandlinetools
+```
+
+Use JDK 21 for Gradle. The JBR bundled with the current Android Studio release is newer than this project's Gradle 8.14.3 build expects.
+
+```bash
+export JAVA_HOME="/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+export ANDROID_SDK_ROOT="$ANDROID_HOME"
+export NDK_HOME="$ANDROID_HOME/ndk/30.0.14904198"
+export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH"
+```
+
+Install the Android pieces used by the project:
+
+```bash
+android --sdk "$ANDROID_HOME" sdk install platform-tools
+android --sdk "$ANDROID_HOME" sdk install platforms/android-36
+android --sdk "$ANDROID_HOME" sdk install build-tools/36.0.0
+android --sdk "$ANDROID_HOME" sdk install ndk/30.0.14904198
+android --sdk "$ANDROID_HOME" sdk install emulator
+android --sdk "$ANDROID_HOME" sdk install system-images/android-36/google_apis_playstore/arm64-v8a
+```
+
+Create and start an ARM64 phone emulator:
+
+```bash
+android --sdk "$ANDROID_HOME" emulator create medium_phone
+android --sdk "$ANDROID_HOME" emulator start medium_phone
+```
+
+Then run the Tauri app:
+
+```bash
+cd parlezvous
+bun tauri android dev medium_phone --no-watch
+```
+
+Tauri forwards the frontend dev port. To let the emulator use the existing `localhost` defaults for host AI services, reverse the service ports as needed:
+
+```bash
+adb reverse tcp:11434 tcp:11434  # Ollama
+adb reverse tcp:8000 tcp:8000    # Whisper-compatible ASR
+adb reverse tcp:5050 tcp:5050    # OpenAI-compatible TTS
+```
+
+For a physical Android device, use reachable LAN/service URLs instead of ADB reverse.
+
+A debug APK can be built without release signing credentials:
+
+```bash
+bun tauri android build --debug --apk --target aarch64
+```
+
+The verified output path is:
+
+```text
+parlezvous/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk
+```
+
+Debug packaging strips Rust DWARF symbols before Gradle assembles the APK. This reduced the verified ARM64 debug APK from hundreds of MiB of symbol overhead to about 141 MB. Set `PARLEZVOUS_KEEP_ANDROID_SYMBOLS=1` when you specifically need native Rust debugging symbols in the Android library.
+
+The Qualcomm runtime fetch script is only needed when working on the corresponding physical-device NPU acceleration path; it is **not required** for the emulator build.
+
+### Signed release APK
+
+A signed release still requires a keystore. Create one:
+
+```bash
+keytool -genkey -v -keystore ~/upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+```
+
+Create `parlezvous/src-tauri/gen/android/keystore.properties`:
+
+```properties
+password=your_keystore_password
+keyAlias=upload
+storeFile=/absolute/path/to/upload-keystore.jks
+```
+
+Then build:
+
+```bash
+bun tauri android build --apk
+```
+
+### Optional Hangul handwriting model
+
+To enable Hangul CNN recognition:
+
+```bash
+cd hangulnist
+uv sync
+uv run main.py
+mkdir -p ../parlezvous/src-tauri/models
+cp character_model.onnx character_model.onnx.data ../parlezvous/src-tauri/models/
+```
+
+The native build script will detect the files automatically.
+
+### iOS development on macOS
+
+The checked-in `src-tauri/gen/apple` project is generated by Tauri and was verified with an ARM64 iOS Simulator build. Install the Apple-side tooling and Rust targets:
+
+```bash
+brew install xcodegen libimobiledevice cocoapods
+rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios
+```
+
+For a signing-free simulator build:
+
+```bash
+cd parlezvous
+bun tauri ios build --debug --target aarch64-sim --no-sign --ci
+```
+
+The initial iOS port intentionally uses the existing server-backed Ollama/ASR/TTS paths. The custom LiteRT and Supertonic plugins include Swift bridge packages so the app builds and launches, but their on-device model capabilities report unavailable on iOS until native Apple implementations are added.
 
 ---
 
@@ -79,7 +180,7 @@ This exposes the ASR API endpoint at `http://localhost:8000/v1/audio/transcripti
 
 ### Configuring Model Size:
 By default, the server loads the `"tiny"` model size for fast, low-memory inference. To use a different model size (such as `"base"`, `"small"`, `"medium"`, or `"large"`):
-1. Open the [app.py](file:///home/user/Documents/lang/parlezvous/whisper/app.py) configuration file.
+1. Open the [app.py](../whisper/app.py) configuration file.
 2. Locate the model loading block and change `model_name`:
    ```python
    # --- Model Loading ---
@@ -122,7 +223,13 @@ This exposes the TTS server on port `5050` at the endpoint `http://localhost:505
 To support offline operation on mobile devices without running a Python server:
 1. The Android application includes the **Supertonic TTS** plugin (powered by `onnxruntime` and Kotlin).
 2. Go to the Settings screen in the application.
-3. Download the `supertonic-3` models directly. Once downloaded, the application will run all TTS synthesis locally on the device, eliminating the need for an external TTS server.
+3. Download the `supertonic-3` models directly.
+4. Choose the Android **TTS Provider** policy in Settings:
+   - **Auto**: use Supertonic locally and retry only failed sentence chunks through the configured server.
+   - **Supertonic**: local-only speech; useful for a fully offline session.
+   - **Server**: bypass Supertonic and use the configured OpenAI-compatible TTS URL.
+
+Desktop playback always uses the configured server. The TTS policy is persisted in SQLite and existing installs migrate to `Auto` by default.
 
 ---
 
@@ -144,4 +251,6 @@ To support fully offline, private chat and journaling on mobile devices:
 1. The Android client features the **Google LiteRT** (TensorFlow Lite) plugin.
 2. Enter your HuggingFace Access Token in the app settings panel.
 3. Use the in-app download buttons to download the `gemma-4-E2B-it.litertlm` model file and tokenizer directly to your phone.
-4. The application will automatically route all chat and journal prompts to run locally on the mobile phone's CPU/GPU/NPU.
+4. The application will automatically route chat, journal, conjugation, and puzzle generation through the on-device model while it is selected.
+
+> **RAG note:** textbook PDF retrieval still uses an `EmbeddingProvider` backed by Ollama. LiteRT chat itself can be offline, but textbook ingestion/search currently requires a reachable Ollama embedding service (for example through `adb reverse tcp:11434 tcp:11434` on the emulator).

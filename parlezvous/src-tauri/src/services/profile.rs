@@ -28,19 +28,21 @@ pub struct UserProfile {
     pub skill_level: String,
     pub tier: i32,
     pub active_seconds: i32,
+    pub display_name: String,
 }
 
 pub fn get_profile(db: Arc<Mutex<Connection>>) -> Result<UserProfile, String> {
     let conn = db.lock().map_err(|_| "Failed to lock database")?;
     let profile = conn
         .query_row(
-            "SELECT skill_level, tier, active_seconds FROM user_profile WHERE id = 1",
+            "SELECT skill_level, tier, active_seconds, display_name FROM user_profile WHERE id = 1",
             [],
             |row| {
                 Ok(UserProfile {
                     skill_level: row.get(0)?,
                     tier: row.get(1)?,
                     active_seconds: row.get(2)?,
+                    display_name: row.get::<_, String>(3).unwrap_or_default(),
                 })
             },
         )
@@ -48,8 +50,34 @@ pub fn get_profile(db: Arc<Mutex<Connection>>) -> Result<UserProfile, String> {
             skill_level: "Beginner".to_string(),
             tier: 1,
             active_seconds: 0,
+            display_name: String::new(),
         });
-    Ok(profile)
+    Ok(UserProfile {
+        display_name: if profile.display_name.trim().is_empty() { default_display_name() } else { profile.display_name },
+        ..profile
+    })
+}
+
+pub fn update_display_name(db: Arc<Mutex<Connection>>, display_name: String) -> Result<(), String> {
+    let conn = db.lock().map_err(|_| "Failed to lock database")?;
+    conn.execute("UPDATE user_profile SET display_name = ?1 WHERE id = 1", rusqlite::params![display_name.trim()])
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+fn default_display_name() -> String {
+    #[cfg(any(target_os = "android", target_os = "ios"))]
+    { return "Learner".to_string(); }
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    {
+        for key in ["USER", "LOGNAME", "USERNAME"] {
+            if let Ok(value) = std::env::var(key) {
+                let value = value.trim();
+                if !value.is_empty() { return value.to_string(); }
+            }
+        }
+        "Learner".to_string()
+    }
 }
 
 pub fn add_active_seconds(db: Arc<Mutex<Connection>>, seconds: i32) -> Result<(), String> {

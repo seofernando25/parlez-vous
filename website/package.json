@@ -21,5 +21,6 @@
   "dependencies": {
     "@types/marked": "^6.0.0",
     "marked": "^18.0.5"
-  }
+  },
+  "packageManager": "bun@1.4.2"
 }

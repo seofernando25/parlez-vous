@@ -10,7 +10,7 @@ describe('Ollama State', () => {
     });
 
     it('should update state to healthy when backend returns true', async () => {
-        vi.mocked(invoke).mockResolvedValueOnce(true);
+        vi.mocked(invoke).mockResolvedValueOnce(true).mockResolvedValueOnce([]);
 
         await checkOllamaHealth();
 

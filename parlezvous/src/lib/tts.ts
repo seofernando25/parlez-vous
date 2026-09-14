@@ -1,5 +1,6 @@
-import toast from 'svelte-french-toast';
 import { invoke } from '@tauri-apps/api/core';
+import { isAndroidTauri } from '$lib/platform';
+import { resolveTtsProviderUrls, type TtsProviderPolicy } from '$lib/media/tts-policy';
 
 export let ttsAudioContext: AudioContext | null = null;
 export let ttsPlaybackRate: number = 1.0;
@@ -85,12 +86,59 @@ function pairSegments(segments: string[]): string[] {
     return paired.filter(s => s.length > 0);
 }
 
+async function synthesizeAndPlayChunk(
+    text: string,
+    providerUrl: string,
+    targetLang: string
+): Promise<boolean> {
+    try {
+        const rawAudioBytes: number[] = await invoke('generate_tts_audio', {
+            text,
+            language: targetLang,
+            voice: 'sohee',
+            speed: ttsPlaybackRate,
+            url: providerUrl
+        });
+
+        if (rawAudioBytes.length === 0 || !hiddenAudioElement) return false;
+
+        const blob = new Blob([new Uint8Array(rawAudioBytes)], { type: 'audio/wav' });
+        const objectUrl = URL.createObjectURL(blob);
+
+        try {
+            hiddenAudioElement.src = objectUrl;
+            hiddenAudioElement.playbackRate = ttsPlaybackRate;
+            hiddenAudioElement.load();
+
+            const finished = new Promise<void>((resolve) => {
+                hiddenAudioElement!.onended = () => resolve();
+                hiddenAudioElement!.onerror = () => resolve();
+            });
+
+            await hiddenAudioElement.play();
+            await finished;
+            return true;
+        } catch (error) {
+            console.warn(`[TTS] Playback failed for ${providerUrl}:`, error);
+            return false;
+        } finally {
+            hiddenAudioElement.onended = null;
+            hiddenAudioElement.onerror = null;
+            URL.revokeObjectURL(objectUrl);
+        }
+    } catch (error) {
+        console.warn(`[TTS] Synthesis failed for ${providerUrl}:`, error);
+        return false;
+    }
+}
+
 export async function playTTS(
     text: string,
     ttsServerUrl: string,
     onAnim?: (animCode: string, delayMs: number) => void,
-    targetLang: string = 'en'
-) {
+    targetLang: string = 'en',
+    fallbackServerUrl?: string
+): Promise<boolean> {
     if (!ttsAudioContext) initTTSAudio();
 
     if (ttsAudioContext?.state === 'suspended') {
@@ -98,221 +146,56 @@ export async function playTTS(
     }
 
     const sanitized = sanitizeTTSInput(text);
-
-    // 1. Replace <anim:code> with a hidden anchor BEFORE chunking
     const animRegex = /[<\[]anim:([a-zA-Z0-9_-]+)[>\]]/g;
     const textWithAnchors = sanitized.replace(animRegex, '|||ANIM_$1|||');
-
-    // 2. Chunk the text. The anchors safely ride along inside their specific chunk!
     const chunks = chunkSentences(textWithAnchors, targetLang);
+    const providerUrls = [ttsServerUrl, fallbackServerUrl]
+        .filter((url): url is string => Boolean(url))
+        .filter((url, index, values) => values.indexOf(url) === index);
 
-    // Process chunks sequentially
-    for (const chunk of chunks) {
-        if (!chunk.trim()) continue;
-
-        // 3. Extract the animation meant for THIS specific audio chunk
-        const anchorRegex = /\|\|\|ANIM_([a-zA-Z0-9_-]+)\|\|\|/g;
-        const animsForThisChunk: string[] = [];
-        let match;
-
-        while ((match = anchorRegex.exec(chunk)) !== null) {
-            animsForThisChunk.push(match[1]);
-        }
-
-        // 4. Remove the anchors so the TTS engine gets clean text
-        const cleanChunk = chunk.replace(anchorRegex, '').trim();
-
-        if (!cleanChunk) continue; // Skip if chunk was ONLY an animation tag
-
-        try {
-            // Offload TTS request to Rust backend via the generate_tts_audio command
-            const rawAudioBytes: number[] = await invoke('generate_tts_audio', {
-                text: cleanChunk,
-                language: targetLang,
-                voice: 'sohee', // The backend will ignore this for Supertonic and use F1.json
-                speed: ttsPlaybackRate,
-                url: ttsServerUrl
-            });
-
-            const audioBytes = new Uint8Array(rawAudioBytes);
-            const arrayBuffer = audioBytes.buffer;
-            const blob = new Blob([arrayBuffer], { type: 'audio/wav' });
-            const url = URL.createObjectURL(blob);
-
-            if (hiddenAudioElement) {
-                hiddenAudioElement.src = url;
-                hiddenAudioElement.playbackRate = ttsPlaybackRate;
-                hiddenAudioElement.load(); // Force the browser to evaluate the file
-
-                try {
-                    // .play() returns a Promise that instantly REJECTS if the audio is corrupted/empty
-                    await hiddenAudioElement.play();
-
-                    // 5. TRIGGER THE ANIMATION IMMEDIATELY (0ms delay)
-                    if (onAnim && animsForThisChunk.length > 0) {
-                        onAnim(animsForThisChunk[0], 0);
-                    }
-
-                    // Wait for the audio chunk to finish before fetching the next one
-                    await new Promise<void>((resolve) => {
-                        // Resolve normally when finished
-                        hiddenAudioElement!.onended = () => resolve();
-
-                        // IF the audio crashes mid-playback, resolve anyway to prevent deadlocks!
-                        hiddenAudioElement!.onerror = (e) => {
-                            console.warn("Audio playback interrupted", e);
-                            resolve();
-                        };
-                    });
-
-                } catch (playError) {
-                    console.warn("Skipping invalid audio chunk:", playError);
-                    // The WAV was corrupted or empty (common on the final sentence). 
-                    // We just catch the error and do nothing, allowing the loop to finish gracefully!
-                } finally {
-                    URL.revokeObjectURL(url);
-                }
-            }
-
-        } catch (error) {
-            console.error("TTS Stream Error:", error);
-        }
-    }
-}
-
-export function normalizeSupertonicLocale(langStr: string): string {
-    const langMap: Record<string, string> = {
-        english: 'en', korean: 'ko', japanese: 'ja', arabic: 'ar',
-        bulgarian: 'bg', czech: 'cs', danish: 'da', german: 'de',
-        greek: 'el', spanish: 'es', estonian: 'et', finnish: 'fi',
-        french: 'fr', hindi: 'hi', croatian: 'hr', hungarian: 'hu',
-        indonesian: 'id', italian: 'it', lithuanian: 'lt', latvian: 'lv',
-        dutch: 'nl', polish: 'pl', portuguese: 'pt', romanian: 'ro',
-        russian: 'ru', slovak: 'sk', slovenian: 'sl', swedish: 'sv',
-        turkish: 'tr', ukrainian: 'uk', vietnamese: 'vi'
-    };
-    const cleanLocale = langStr.trim().toLowerCase();
-    return langMap[cleanLocale] || cleanLocale;
-}
-
-export async function playSupertonicTTS(
-    text: string,
-    onAnim?: (animCode: string, delayMs: number) => void,
-    targetLang: string = 'en'
-) {
-    if (!ttsAudioContext) initTTSAudio();
-
-    if (ttsAudioContext?.state === 'suspended') {
-        await ttsAudioContext.resume();
-    }
-
-    const sanitized = sanitizeTTSInput(text);
-    const animRegex = /[<\[]anim:([a-zA-Z0-9_-]+)[>\]]/g;
-    const textWithAnchors = sanitized.replace(animRegex, '|||ANIM_$1|||');
-    
-    // Normalize to BCP-47 only for the segmenter, so it doesn't crash on full names
-    const bcp47Locale = normalizeSupertonicLocale(targetLang);
-    const chunks = chunkSentences(textWithAnchors, bcp47Locale);
-
-    // Tauri invoke is dynamic to avoid breaking non-Tauri web builds
-    let invoke: any;
-    if ((window as any).__TAURI_INTERNALS__) {
-        try {
-            const core = await import('@tauri-apps/api/core');
-            invoke = core.invoke;
-        } catch (e) {
-            console.warn("Could not load tauri api", e);
-            return;
-        }
-    } else {
-        return;
-    }
+    let playedAnyChunk = false;
 
     for (const chunk of chunks) {
         if (!chunk.trim()) continue;
 
         const anchorRegex = /\|\|\|ANIM_([a-zA-Z0-9_-]+)\|\|\|/g;
-        const animsForThisChunk: string[] = [];
-        let match;
-
-        while ((match = anchorRegex.exec(chunk)) !== null) {
-            animsForThisChunk.push(match[1]);
-        }
+        const animations: string[] = [];
+        let match: RegExpExecArray | null;
+        while ((match = anchorRegex.exec(chunk)) !== null) animations.push(match[1]);
 
         const cleanChunk = chunk.replace(anchorRegex, '').trim();
         if (!cleanChunk) continue;
 
-        try {
-            const response = await invoke('generate_supertonic_tts', {
-                text: cleanChunk,
-                lang: targetLang,
-                speed: ttsPlaybackRate,
-                steps: 6
-            }) as { audioBytes: number[]; sampleRate: number };
+        let playedChunk = false;
+        for (const providerUrl of providerUrls) {
+            playedChunk = await synthesizeAndPlayChunk(cleanChunk, providerUrl, targetLang);
+            if (!playedChunk) continue;
 
-            // The Rust code returns an array of bytes representing WAV
-            const audioBytes = new Uint8Array(response.audioBytes);
+            playedAnyChunk = true;
+            if (onAnim && animations.length > 0) onAnim(animations[0], 0);
+            break;
+        }
 
-            // To create a valid WAV blob, we need to add a WAV header, but wait!
-            // Supertonic Rust returns raw PCM samples, or does it return full WAV bytes?
-            // The Rust code: write_wav_file writes WAV. But we returned `pcm_data`!
-            // Actually, we returned `pcm_data`. So it's raw 16-bit PCM.
-            // We need to convert raw PCM to an AudioBuffer, or we should return a full WAV file from Rust.
-            // Since we returned raw PCM bytes from Rust without WAV header, we must decode it manually or add a WAV header!
-            // Let's create an AudioBuffer directly from raw PCM bytes instead.
-
-            const ctx = ttsAudioContext!;
-            const numSamples = audioBytes.length / 2; // 16-bit
-            const audioBuffer = ctx.createBuffer(1, numSamples, response.sampleRate || 22050);
-            const channelData = audioBuffer.getChannelData(0);
-
-            const dataView = new DataView(audioBytes.buffer);
-            for (let i = 0; i < numSamples; i++) {
-                // Read 16-bit signed integer (little-endian)
-                const sample16 = dataView.getInt16(i * 2, true);
-                // Convert to float [-1.0, 1.0]
-                channelData[i] = sample16 / 32768.0;
-            }
-
-            // Create AudioBufferSourceNode
-            const source = ctx.createBufferSource();
-            source.buffer = audioBuffer;
-            source.playbackRate.value = ttsPlaybackRate;
-
-            // Connect to hidden audio element destination
-            source.connect(ctx.destination);
-            if (lipsyncNodeRef) {
-                source.connect(lipsyncNodeRef);
-            }
-
-            source.start();
-
-            if (onAnim && animsForThisChunk.length > 0) {
-                onAnim(animsForThisChunk[0], 0);
-            }
-
-            await new Promise<void>((resolve) => {
-                source.onended = () => resolve();
-            });
-
-        } catch (error) {
-            toast.error('Supertonic TTS failed' + error);
-            console.error("Supertonic TTS Error:", error);
+        if (!playedChunk) {
+            console.error('[TTS] Unable to synthesize/play chunk with any configured provider:', cleanChunk);
         }
     }
-}
 
+    return playedAnyChunk;
+}
 
 export async function playSmartTTS(
     text: string,
     ttsServerUrl: string,
     onAnim?: (animCode: string, delayMs: number) => void,
-    targetLang: string = 'en'
+    targetLang: string = 'en',
+    policy: TtsProviderPolicy = 'auto'
 ) {
-    const isAndroidTauri = (window as any).__TAURI_INTERNALS__ && navigator.userAgent.toLowerCase().includes('android');
-    if (isAndroidTauri) {
-        await playSupertonicTTS(text, onAnim, targetLang);
-    } else {
-        await playTTS(text, ttsServerUrl, onAnim, targetLang);
+    const providers = resolveTtsProviderUrls(policy, isAndroidTauri(), ttsServerUrl);
+    if (providers.length === 0) {
+        console.warn('[TTS] No provider is configured for the selected policy.');
+        return;
     }
+    const [primary, fallback] = providers;
+    await playTTS(text, primary, onAnim, targetLang, fallback);
 }

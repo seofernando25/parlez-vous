@@ -43,7 +43,7 @@ describe('Flashcards Page', () => {
         const { getByText } = render(FlashcardsPage);
 
         await waitFor(() => {
-            expect(getByText('No vocabulary yet')).toBeInTheDocument();
+            expect(getByText('No saved words yet.')).toBeInTheDocument();
         });
         expect(getByText('0')).toBeInTheDocument(); // total words
     });

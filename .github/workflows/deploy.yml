@@ -16,27 +16,18 @@ jobs:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
 
-      - name: Install pnpm 📦
-        uses: pnpm/action-setup@v4
+      - name: Setup Bun 📦
+        uses: oven-sh/setup-bun@v2
         with:
-          version: 11
-
-      - name: Setup Node.js ⚙️
-        uses: actions/setup-node@v4
-        with:
-          node-version: 23
-          cache: 'pnpm'
-          cache-dependency-path: 'website/pnpm-lock.yaml'
+          bun-version: 1.4.2
 
       - name: Install Dependencies 🔧
-        run: |
-          cd website
-          pnpm install --no-frozen-lockfile
+        working-directory: website
+        run: bun install --frozen-lockfile
 
       - name: Build 🏗️
-        run: |
-          cd website
-          pnpm run build
+        working-directory: website
+        run: bun run build
 
       - name: Deploy 🚀
         uses: peaceiris/actions-gh-pages@v4

@@ -14,14 +14,14 @@ The application integrates cutting-edge AI technologies and cognitive science to
 
 Explore the documentation pages using the sidebar navigation or index links below:
 
-### 1. [System Architecture](file:///home/user/Documents/lang/parlezvous/docs/architecture.md)
+### 1. [System Architecture](architecture.md)
 Learn about the dual-process architecture combining a Rust Tauri backend with a SvelteKit frontend, IPC (Inter-Process Communication) bridge commands, SQLite database migrations, and local vector RAG setup.
 
-### 2. [Application Features](file:///home/user/Documents/lang/parlezvous/docs/features.md)
+### 2. [Application Features](features.md)
 Detailed functional details of core modules including the Spaced Repetition System (SRS) algorithm, AI-guided Journaling & Grading, interactive 3D VRM Avatar, and ONNX-based Hangul Handwriting Canvas.
 
-### 3. [Installation & Setup](file:///home/user/Documents/lang/parlezvous/docs/installation.md)
+### 3. [Installation & Setup](installation.md)
 Complete guide to building and running the Tauri desktop app, generating the Android APK package, and deploying helper containers like Whisper ASR and Qwen3-TTS.
 
-### 4. [Development Guide](file:///home/user/Documents/lang/parlezvous/docs/development.md)
+### 4. [Development Guide](development.md)
 Guidelines for extending the application, updating the database schema, modifying the learning curriculum, and training or exporting the Hangul Jamo CNN model using the PyTorch-to-ONNX pipeline.

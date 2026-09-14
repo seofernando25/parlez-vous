@@ -1,3 +1,4 @@
+pub mod chat_history;
 pub mod calendar;
 pub mod conjugator;
 pub mod curriculum;

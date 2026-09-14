@@ -1,0 +1,165 @@
+.app-shell {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--pv-canvas);
+  color: var(--pv-foreground);
+}
+
+.app-content {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.mobile-tab-bar {
+  position: relative;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  min-height: 4.25rem;
+  padding: 0.35rem 0.5rem calc(0.35rem + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--pv-border);
+  background: color-mix(in oklch, var(--pv-surface) 94%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.mobile-tab-bar a {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  align-self: center;
+  justify-self: center;
+  border-radius: 0.9rem;
+  color: var(--pv-subtle);
+  transition: color 140ms ease, background 140ms ease, transform 100ms ease;
+}
+
+.mobile-tab-bar a:active { transform: scale(0.92); }
+.mobile-tab-bar a.active {
+  color: var(--pv-accent-strong);
+  background: var(--pv-accent-soft);
+}
+
+.desktop-sidebar {
+  flex-direction: column;
+  width: 4.5rem;
+  min-width: 4.5rem;
+  height: 100dvh;
+  border-right: 1px solid var(--pv-border);
+  background: var(--pv-surface);
+  transition: width 180ms cubic-bezier(.2,.8,.2,1), min-width 180ms cubic-bezier(.2,.8,.2,1);
+}
+
+.desktop-sidebar.expanded {
+  width: 14rem;
+  min-width: 14rem;
+}
+
+.sidebar-header {
+  display: flex;
+  height: 4.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  overflow: hidden;
+}
+
+.desktop-sidebar.expanded .sidebar-header {
+  justify-content: space-between;
+  padding-inline: 1rem 0.7rem;
+}
+
+.brand-name {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--pv-foreground);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  text-decoration: none;
+}
+.brand-name span { color: var(--pv-accent-strong); }
+
+.sidebar-toggle {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 2.5rem;
+  place-items: center;
+  border: 0;
+  border-radius: 0.75rem;
+  background: transparent;
+  color: var(--pv-subtle);
+  cursor: pointer;
+}
+.sidebar-toggle:hover { background: var(--pv-surface-raised); color: var(--pv-foreground); }
+
+.sidebar-nav {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.75rem;
+}
+
+.sidebar-nav a {
+  display: flex;
+  min-height: 2.85rem;
+  align-items: center;
+  gap: 0.8rem;
+  overflow: hidden;
+  border-radius: 0.85rem;
+  padding: 0 0.8rem;
+  color: var(--pv-muted);
+  font-size: 0.875rem;
+  font-weight: 650;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.sidebar-nav a svg { flex: 0 0 auto; }
+.sidebar-nav a:hover { background: var(--pv-surface-raised); color: var(--pv-foreground); }
+.sidebar-nav a.active { background: var(--pv-accent-soft); color: var(--pv-accent-strong); }
+
+
+.sidebar-account {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--pv-border);
+}
+.sidebar-account a {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  border-radius: 0.8rem;
+  color: var(--pv-muted);
+  text-decoration: none;
+}
+.sidebar-account a:hover { background: var(--pv-surface-raised); color: var(--pv-foreground); }
+.sidebar-account a.active { background: var(--pv-accent-soft); color: var(--pv-accent-strong); }
+.sidebar-account span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .84rem; font-weight: 650; }
+.desktop-sidebar.expanded .sidebar-account { display: grid; grid-template-columns: minmax(0,1fr) 2.75rem; }
+.desktop-sidebar.expanded .account-user { justify-content: flex-start; padding: 0 .75rem; }
+.account-settings { width: 2.75rem; }
+
+@media (min-width: 768px) {
+  .app-shell { display: flex; flex-direction: row; }
+  .app-content { flex: 1; }
+  .mobile-tab-bar { display: none !important; }
+}
+
+@media (max-width: 767px) {
+  .desktop-sidebar { display: none !important; }
+  .app-content { box-sizing: border-box; padding-top: env(safe-area-inset-top); }
+}

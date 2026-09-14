@@ -1,5 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { settingsState } from '$lib/state/settings.svelte.ts';
+import { isAndroidTauri } from '$lib/platform';
+import { isLiteRtModel } from '$lib/ai/capabilities';
 
 export const ollamaState = $state({
     isHealthy: true,
@@ -26,21 +28,21 @@ export async function checkOllamaHealth() {
 export async function fetchOllamaModels() {
     try {
         const rawModels = await invoke<string[]>('list_ollama_models');
-        const models = rawModels.filter(m => !m.includes('litert'));
+        const models = rawModels;
         ollamaState.models = models;
-        const isAndroidTauri = (window as any).__TAURI_INTERNALS__ && navigator.userAgent.toLowerCase().includes('android');
-        const isLitert = settingsState.activeModel.includes('litert');
+        const isAndroid = isAndroidTauri();
+        const isLitert = isLiteRtModel(settingsState.activeModel);
 
-        if (rawModels.includes(settingsState.activeModel) || (isAndroidTauri && isLitert)) {
+        if (rawModels.includes(settingsState.activeModel) || (isAndroid && isLitert)) {
             // Already a valid Ollama model
         } else if (models.length > 0) {
             // It's not a valid Ollama model.
             // Overwrite if it is not a Litert model, or if we are on Desktop (meaning Litert is invalid here)
-            if (!isLitert || !isAndroidTauri) {
+            if (!isLitert || !isAndroid) {
                 settingsState.activeModel = models[0];
                 import('$lib/state/settings.svelte.ts').then(m => m.saveSettings());
             }
-        } else if (isAndroidTauri) {
+        } else if (isAndroid) {
             if (!isLitert) {
                 settingsState.activeModel = "gemma-4-E2B-it.litertlm";
                 import('$lib/state/settings.svelte.ts').then(m => m.saveSettings());

@@ -4,6 +4,22 @@ Instructions on how to extend the codebase, train custom models, and modify curr
 
 ---
 
+
+## Source organization invariant
+
+Authored source files must stay at or below **300 lines of code**. The rule applies to TypeScript, JavaScript, Svelte, CSS, Rust, Kotlin, and Gradle Kotlin files under the app, native plugins, and website. Generated/vendor/build output is excluded.
+
+The invariant is enforced by:
+
+```bash
+cd parlezvous
+bun run check:loc
+```
+
+`bun run verify` includes this check before type diagnostics, tests, and the production build. Prefer extracting cohesive domain modules, controllers/services, or focused components rather than mechanically splitting a large file by line count. Routes and plugin entrypoints should stay thin; stateful orchestration belongs in domain controllers/services, while pure data/transforms belong in standalone modules.
+
+---
+
 ## 1. Training & Exporting the Jamo CNN Model
 
 The handwriting canvas utilizes a custom-trained CNN classification model built in PyTorch.
@@ -26,10 +42,7 @@ The handwriting canvas utilizes a custom-trained CNN classification model built 
      ```
 4. **ONNX Export**:
    - The training script automatically compiles and exports the trained PyTorch network weights into an ONNX model file named `character_model.onnx` and its weight data file `character_model.onnx.data`.
-5. **Distribution**: Copy these generated files into the Tauri source tree to make them accessible to the Rust inference backend:
-   ```bash
-   cp character_model.onnx character_model.onnx.data ../parlezvous/src-tauri/models/
-   ```
+5. **Build integration**: Keep `character_model.onnx` and `character_model.onnx.data` together in `hangulnist/`. The Tauri build detects them there automatically. The model is optional: without it, the rest of the application still compiles and only Hangul handwriting inference is disabled.
 
 ---
 
@@ -48,9 +61,9 @@ The learning structure is defined inside `parlezvous/src/lib/curriculum.ts`:
 
 ## 3. Database Migrations
 
-SQLite schema updates are managed inside `parlezvous/src-tauri/src/db/mod.rs`:
+SQLite schema updates are defined in `parlezvous/src-tauri/src/db/schema.rs` and applied by `db/mod.rs`:
 
 - To alter tables or add columns, define a new schema SQL batch constant (e.g. `pub const SCHEMA_V17: &str = ...`).
-- Increment the global constant `const DB_VERSION_NUM: usize` by 1.
-- Append your new constant `SCHEMA_V17` to the `schemas` array inside `init_db`.
+- Increment `DB_VERSION_NUM`.
+- Append the new schema constant to the migration array in `db/mod.rs`.
 - The migrator automatically compares the database's `PRAGMA user_version` value and applies all pending schema migrations sequentially when the application boots up.

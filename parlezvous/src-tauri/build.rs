@@ -1,33 +1,66 @@
 use burn_onnx::ModelGen;
-use std::env;
-use std::path::PathBuf;
+use std::{
+    env,
+    path::{Path, PathBuf},
+};
+
+fn compile_optional_model(
+    model_name: &str,
+    cfg_name: &str,
+    candidates: &[PathBuf],
+    out_dir: &Path,
+) {
+    println!("cargo:rustc-check-cfg=cfg({cfg_name})");
+
+    for candidate in candidates {
+        println!("cargo:rerun-if-changed={}", candidate.display());
+        if candidate.exists() {
+            println!("cargo:rustc-cfg={cfg_name}");
+            println!(
+                "cargo:warning=Compiling optional {model_name} model from {}",
+                candidate.display()
+            );
+            ModelGen::new()
+                .input(candidate.to_str().expect("model path must be valid UTF-8"))
+                .out_dir(out_dir.to_str().expect("output path must be valid UTF-8"))
+                .run_from_script();
+            return;
+        }
+    }
+
+    println!(
+        "cargo:warning=Optional {model_name} handwriting model not found; app will build with that recognizer disabled"
+    );
+}
 
 fn main() {
-    // 1. Get the absolute path to the src-tauri folder
-    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let onnx_path = PathBuf::from(&manifest_dir).join("models").join("character_model.onnx");
-    
-    // 2. Put the generated model safely into the target build folder
-    let out_dir = env::var("OUT_DIR").unwrap();
-    let model_out = PathBuf::from(&out_dir).join("model");
+    let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR"));
+    let repo_root = manifest_dir
+        .parent()
+        .and_then(Path::parent)
+        .unwrap_or(&manifest_dir);
+    let model_dir = manifest_dir.join("models");
+    let generated_dir = PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR")).join("model");
 
-    // Tell cargo to only rebuild if the ONNX file actually changes
-    println!("cargo:rerun-if-changed={}", onnx_path.display());
+    compile_optional_model(
+        "Hangul",
+        "has_character_model",
+        &[
+            model_dir.join("character_model.onnx"),
+            repo_root.join("hangulnist/character_model.onnx"),
+        ],
+        &generated_dir,
+    );
 
-    // 3. Compile the model using absolute paths
-    ModelGen::new()
-        .input(onnx_path.to_str().unwrap())
-        .out_dir(model_out.to_str().unwrap())
-        .run_from_script();
-
-    let cyrillic_path = PathBuf::from(&manifest_dir).join("models").join("cyrillic_model.onnx");
-    println!("cargo:rerun-if-changed={}", cyrillic_path.display());
-    if cyrillic_path.exists() {
-        ModelGen::new()
-            .input(cyrillic_path.to_str().unwrap())
-            .out_dir(model_out.to_str().unwrap())
-            .run_from_script();
-    }
+    compile_optional_model(
+        "Cyrillic",
+        "has_cyrillic_model",
+        &[
+            model_dir.join("cyrillic_model.onnx"),
+            repo_root.join("hangulnist/cyrillic_model.onnx"),
+        ],
+        &generated_dir,
+    );
 
     tauri_build::build()
 }

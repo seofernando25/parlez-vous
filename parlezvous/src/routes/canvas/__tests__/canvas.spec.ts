@@ -12,6 +12,12 @@ describe('Canvas Page', () => {
             if (cmd === 'get_all_jamo') {
                 return ['ㅏ', 'ㅂ', 'ㄱ'];
             }
+            if (cmd === 'get_alphabet_letters') {
+                return [{
+                    char: 'ㅏ', uppercase: 'ㅏ', lowercase: 'ㅏ', name: 'ㅏ',
+                    romanization: 'a', pronunciation: '[a]', script: 'hangul', is_vowel: true
+                }];
+            }
             if (cmd === 'infer_character') {
                 return 'ㅏ'; // Mock prediction
             }
@@ -59,14 +65,16 @@ describe('Canvas Page', () => {
     });
 
     it('should preprocess canvas and submit a 784-length numeric array', async () => {
-        const { getByText } = render(CanvasPage);
+        const { getByRole, getAllByText } = render(CanvasPage);
 
-        // Wait for onMount to complete (get_all_jamo)
+        // Wait for both startup IPC calls so the derived target character exists.
         await vi.waitFor(() => {
             expect(invoke).toHaveBeenCalledWith('get_all_jamo');
+            expect(invoke).toHaveBeenCalledWith('get_alphabet_letters', { script: 'korean' });
+            expect(getAllByText('ㅏ').length).toBeGreaterThan(0);
         });
-        
-        const submitBtn = getByText('Submit');
+
+        const submitBtn = getByRole('button', { name: 'Check drawing' });
         await fireEvent.click(submitBtn);
 
         // Should call infer_character with a jamo target

@@ -102,11 +102,7 @@ pub async fn process_conjugation_generation(
     let (previously_used, tense_stats, active_theme) = {
         let conn_arc = db.clone();
         let conn = db.lock().map_err(|_| "DB lock failed")?;
-        let limit = if cfg!(target_os = "android") && model.to_lowercase().contains("litert") {
-            10
-        } else {
-            10
-        };
+        let limit = 10;
         let prev = get_recent_conjugations(&conn, &language, limit)?;
         let stats = get_tense_stats(&conn, &language, 1000)?;
         drop(conn); // Drop the lock before getting curriculum to avoid deadlock

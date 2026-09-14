@@ -1,24 +1,23 @@
 use async_trait::async_trait;
 use parlezvous_lib::ai::{
-    ChatMessage, ChatResponse, JournalResponse, JournalVariables, LlmProvider, VocabItem,
+    GradingVariables, JournalProvider, JournalResponse, JournalVariables, VocabItem,
 };
 use parlezvous_lib::db::SCHEMA_V1;
 use parlezvous_lib::services::journal::process_journal_generation;
-use rusqlite::Connection;
+use rusqlite::{ffi::sqlite3_auto_extension, Connection};
+use sqlite_vec::sqlite3_vec_init;
 use std::sync::{Arc, Mutex};
 
 mockall::mock! {
-    pub LlmProvider {}
+    pub JournalProvider {}
     #[async_trait]
-    impl LlmProvider for LlmProvider {
-        async fn check_health(&self) -> bool;
-        async fn list_models(&self) -> Result<Vec<String>, String>;
+    impl JournalProvider for JournalProvider {
         async fn generate_guided_journal(&self, variables: JournalVariables) -> Result<JournalResponse, String>;
-        async fn generate_chat_response(&self, history: Vec<ChatMessage>, model: String) -> Result<ChatResponse, String>;
+        async fn grade_custom_journal(&self, variables: GradingVariables) -> Result<JournalResponse, String>;
     }
 }
-
 fn setup_in_memory_db() -> Connection {
+    unsafe { sqlite3_auto_extension(Some(std::mem::transmute(sqlite3_vec_init as *const ()))); }
     let conn = Connection::open_in_memory().unwrap();
     conn.execute_batch(SCHEMA_V1).unwrap();
     conn
@@ -26,7 +25,7 @@ fn setup_in_memory_db() -> Connection {
 
 #[tokio::test]
 async fn test_generate_journal_inserts_correctly() {
-    let mut mock_ai = MockLlmProvider::new();
+    let mut mock_ai = MockJournalProvider::new();
 
     // Configure the mock to return a static predictable JSON response
     mock_ai.expect_generate_guided_journal().returning(|_| {
@@ -37,6 +36,7 @@ async fn test_generate_journal_inserts_correctly() {
                 target_text: "Bonjour".to_string(),
                 native_text: "Hello".to_string(),
             }],
+            feedback: None,
         })
     });
 
@@ -49,6 +49,9 @@ async fn test_generate_journal_inserts_correctly() {
         weather: "sunny".to_string(),
         activity: "coding".to_string(),
         model: "test-model".to_string(),
+        language: "French".to_string(),
+        skill_level: "Beginner".to_string(),
+        active_theme: None,
     };
 
     // Call the decoupled business logic

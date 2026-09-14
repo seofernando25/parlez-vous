@@ -1,10 +1,11 @@
 <script lang="ts">
     import { invoke } from '@tauri-apps/api/core';
     import { onMount } from 'svelte';
+    import { ChevronLeft, Volume2, X } from 'lucide-svelte';
     import { playSmartTTS } from '$lib/tts';
-    import { settingsState } from '$lib/state/settings.svelte.ts';
+    import { settingsState } from '$lib/state/settings.svelte';
 
-    interface JournalEntryDTO {
+    interface JournalEntry {
         id: number;
         language_code: string;
         date: string;
@@ -15,97 +16,74 @@
         native_translation: string;
     }
 
-    let entries = $state<JournalEntryDTO[]>([]);
+    let entries = $state<JournalEntry[]>([]);
     let isLoading = $state(true);
-    let expandedEntry = $state<JournalEntryDTO | null>(null);
+    let selected = $state<JournalEntry | null>(null);
 
     onMount(async () => {
-        try {
-            entries = (await invoke('get_journal_entries')) as JournalEntryDTO[];
-        } catch (e) {
-            console.error('Failed to load journal entries:', e);
-        } finally {
-            isLoading = false;
-        }
+        try { entries = await invoke<JournalEntry[]>('get_journal_entries'); }
+        catch (error) { console.error('Failed to load journal entries:', error); }
+        finally { isLoading = false; }
     });
+
+    function dateLabel(date: string) {
+        const parsed = new Date(date);
+        if (Number.isNaN(parsed.getTime())) return date;
+        return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(parsed);
+    }
 </script>
 
-<div class="max-w-6xl mx-auto p-6 flex flex-col gap-8 min-h-[calc(100vh-64px)]">
-    <div>
-        <h1 class="text-3xl font-bold text-yellow-200">Journal Calendar</h1>
-        <p class="text-zinc-400 mt-2">Review your past entries and track your language journey.</p>
-    </div>
+<div class="app-page app-page--narrow">
+    <header class="page-heading">
+        <div class="flex items-center gap-3"><a class="icon-button" href="/profile" aria-label="Back to profile" title="Profile"><ChevronLeft size={19} /></a><h1 class="page-title">Journal history</h1></div>
+    </header>
 
     {#if isLoading}
-        <div class="flex-1 flex items-center justify-center">
-            <div class="w-12 h-12 border-4 border-yellow-200 border-t-transparent rounded-full animate-spin"></div>
-        </div>
+        <div class="grid min-h-64 place-items-center"><div class="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent"></div></div>
     {:else if entries.length === 0}
-        <div class="flex-1 flex items-center justify-center bg-zinc-900/20 rounded-3xl border border-dashed border-zinc-800">
-            <p class="text-zinc-500">No journal entries found. Go create one!</p>
-        </div>
+        <div class="history-empty">No entries yet.</div>
     {:else}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="history-list">
             {#each entries as entry}
-                <button 
-                    class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col gap-4 shadow-xl hover:border-yellow-200/30 transition-colors text-left"
-                    onclick={() => expandedEntry = entry}
-                >
-                    <div class="flex justify-between items-start border-b border-zinc-800 pb-4 w-full">
-                        <div class="flex flex-col">
-                            <span class="text-xs font-bold tracking-widest text-zinc-500 uppercase">{entry.language_code}</span>
-                            <span class="text-lg font-bold text-yellow-200">{entry.date}</span>
-                        </div>
-                        <div class="flex flex-col items-end gap-1 text-xs text-zinc-400">
-                            <span class="bg-zinc-800 px-2 py-1 rounded-md">{entry.mood_input}</span>
-                            <span class="bg-zinc-800 px-2 py-1 rounded-md">{entry.weather_input}</span>
-                        </div>
-                    </div>
-                    <div class="flex flex-col gap-3 flex-1 w-full">
-                        <p class="text-zinc-100 text-sm leading-relaxed line-clamp-4">{entry.generated_target_text}</p>
-                        <p class="text-zinc-500 text-xs italic line-clamp-3 mt-auto">{entry.native_translation}</p>
-                    </div>
+                <button onclick={() => selected = entry}>
+                    <div><strong>{dateLabel(entry.date)}</strong><span>{entry.generated_target_text}</span></div>
+                    <small>{entry.language_code}</small>
                 </button>
             {/each}
         </div>
     {/if}
 
-    {#if expandedEntry}
-        <!-- svelte-ignore a11y_click_events_have_key_events -->
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <div class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm" onclick={() => expandedEntry = null}>
-            <!-- svelte-ignore a11y_click_events_have_key_events -->
-            <!-- svelte-ignore a11y_no_static_element_interactions -->
-            <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 max-w-3xl w-full shadow-2xl relative max-h-[90vh] overflow-y-auto" onclick={(e) => e.stopPropagation()}>
-                <button 
-                    class="absolute top-6 right-6 text-zinc-500 hover:text-white bg-zinc-800 rounded-full w-8 h-8 flex items-center justify-center"
-                    onclick={() => expandedEntry = null}
-                >✕</button>
-
-                <div class="flex flex-col mb-6 border-b border-zinc-800 pb-4">
-                    <span class="text-sm font-bold tracking-widest text-zinc-500 uppercase">{expandedEntry.language_code}</span>
-                    <span class="text-2xl font-bold text-yellow-200">{expandedEntry.date}</span>
+    {#if selected}
+        <div class="entry-overlay">
+            <button class="entry-backdrop" onclick={() => selected = null} aria-label="Close journal entry"></button>
+            <article class="entry-detail">
+                <div class="entry-actions">
+                    <button class="icon-button" onclick={() => playSmartTTS(selected!.generated_target_text, settingsState.ttsServerUrl, undefined, settingsState.targetLanguage, settingsState.ttsProvider)} title="Listen" aria-label="Listen"><Volume2 size={17} /></button>
+                    <button class="icon-button" onclick={() => selected = null} title="Close" aria-label="Close"><X size={17} /></button>
                 </div>
-
-                <div class="space-y-8">
-                    <div class="relative">
-                        <h3 class="text-sm font-bold tracking-widest text-zinc-600 uppercase mb-3">Target Entry</h3>
-                        <p class="text-zinc-100 text-lg leading-relaxed whitespace-pre-wrap">{expandedEntry.generated_target_text}</p>
-                        <button 
-                            class="absolute top-0 right-0 text-yellow-200 hover:text-yellow-400 bg-zinc-800 p-2 rounded-full transition-colors border border-zinc-700 hover:border-yellow-200/50"
-                            onclick={() => playSmartTTS(expandedEntry!.generated_target_text, settingsState.ttsServerUrl, undefined, settingsState.targetLanguage)}
-                            title="Play Audio"
-                        >
-                            ▶
-                        </button>
-                    </div>
-
-                    <div>
-                        <h3 class="text-sm font-bold tracking-widest text-zinc-600 uppercase mb-3">Native Translation</h3>
-                        <p class="text-zinc-400 italic whitespace-pre-wrap">{expandedEntry.native_translation}</p>
-                    </div>
-                </div>
-            </div>
+                <time>{dateLabel(selected.date)}</time>
+                <p class="entry-target">{selected.generated_target_text}</p>
+                <p class="entry-translation">{selected.native_translation}</p>
+            </article>
         </div>
     {/if}
 </div>
+
+<style>
+    .history-empty { min-height:18rem; display:grid; place-items:center; color:var(--pv-subtle); font-size:.84rem; }
+    .history-list { border-top:1px solid var(--pv-border); }
+    .history-list > button { display:grid; width:100%; grid-template-columns:minmax(0,1fr) auto; gap:1rem; align-items:center; min-height:4.8rem; border:0; border-bottom:1px solid var(--pv-border); background:transparent; padding:.8rem .15rem; text-align:left; cursor:pointer; }
+    .history-list > button:hover { background:color-mix(in oklch,var(--pv-surface-raised) 45%,transparent); }
+    .history-list div { min-width:0; }
+    .history-list strong,.history-list span { display:block; }
+    .history-list strong { color:var(--pv-foreground); font-size:.84rem; }
+    .history-list span { margin-top:.3rem; overflow:hidden; color:var(--pv-muted); font-size:.8rem; text-overflow:ellipsis; white-space:nowrap; }
+    .history-list small { color:var(--pv-subtle); font-size:.68rem; font-weight:750; text-transform:uppercase; }
+    .entry-overlay { position:fixed; inset:0; z-index:70; display:grid; place-items:center; padding:1rem; }
+    .entry-backdrop { position:absolute; inset:0; border:0; background:color-mix(in oklch,var(--pv-canvas) 65%,transparent); backdrop-filter:blur(10px); cursor:default; }
+    .entry-detail { position:relative; z-index:1; width:min(100%,38rem); max-height:85dvh; overflow:auto; border:1px solid var(--pv-border); border-radius:1rem; background:var(--pv-surface); padding:1.5rem; box-shadow:var(--pv-shadow); }
+    .entry-actions { position:absolute; top:.75rem; right:.75rem; display:flex; gap:.35rem; }
+    .entry-detail time { color:var(--pv-subtle); font-size:.72rem; font-weight:750; }
+    .entry-target { margin:2rem 0 0; color:var(--pv-foreground); font-size:1.05rem; line-height:1.75; white-space:pre-wrap; }
+    .entry-translation { margin:1.2rem 0 0; color:var(--pv-muted); font-size:.88rem; font-style:italic; line-height:1.6; white-space:pre-wrap; }
+</style>

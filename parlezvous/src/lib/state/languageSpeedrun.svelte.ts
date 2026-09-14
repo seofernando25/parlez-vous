@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { settingsState } from './settings.svelte';
 import { getTierFromXP, getRandomThemeAndSubthemeForTier } from '../curriculum';
 import toast from 'svelte-french-toast';
+import { getModelCapabilities } from '$lib/ai/capabilities';
 
 export type LanguageQueueItem = {
     question_type: string;
@@ -68,8 +69,8 @@ export async function maintainLanguageQueue() {
                 activeSubtheme = randomTopic.subtheme;
             } catch(e) {}
             
-            const isLitert = settingsState.activeModel.includes('litert');
-            const puzzleType = isLitert ? "speedrun" : (Math.random() > 0.5 ? "keystone" : "speedrun");
+const capabilities = getModelCapabilities(settingsState.activeModel);
+            const puzzleType = capabilities.supportsKeystonePuzzles && Math.random() > 0.5 ? "keystone" : "speedrun";
             
             console.log(`[maintainLanguageQueue] Requesting puzzle... (Queue size: ${languageSpeedrunState.queue.length}, Model: ${settingsState.activeModel})`);
             const rawJson = await invoke<string>('generate_language_puzzle', {

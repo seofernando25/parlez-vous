@@ -1,0 +1,28 @@
+.settings-panel > h1 {
+  margin: 0;
+  color: var(--pv-foreground);
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.settings-lede {
+  margin: 0.35rem 0 1.5rem;
+  color: var(--pv-muted);
+  font-size: 0.82rem;
+}
+.settings-group + .settings-group {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--pv-border);
+}
+.group-label {
+  display: block;
+  margin-bottom: 0.8rem;
+  color: var(--pv-foreground);
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+@media (max-width: 767px) {
+  .settings-panel > h1,
+  .settings-lede { display: none; }
+}

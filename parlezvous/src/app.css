@@ -1,16 +1,193 @@
 @import "tailwindcss";
+@import "./styles/navigation.css";
+@import "./styles/layout.css";
+@import "./styles/settings.css";
+
+/*
+ * Parlez Vous design system
+ * - spacing follows a 4px base grid
+ * - typography follows a 1.2 (minor-third) modular scale
+ * - color is expressed in OKLCH for perceptually consistent light/dark modes
+ */
+@theme inline {
+  --color-canvas: var(--pv-canvas);
+  --color-surface: var(--pv-surface);
+  --color-surface-raised: var(--pv-surface-raised);
+  --color-surface-hover: var(--pv-surface-hover);
+  --color-border: var(--pv-border);
+  --color-border-strong: var(--pv-border-strong);
+  --color-foreground: var(--pv-foreground);
+  --color-muted: var(--pv-muted);
+  --color-subtle: var(--pv-subtle);
+  --color-accent: var(--pv-accent);
+  --color-accent-strong: var(--pv-accent-strong);
+  --color-accent-soft: var(--pv-accent-soft);
+  --color-on-accent: var(--pv-on-accent);
+  --color-success: var(--pv-success);
+  --color-danger: var(--pv-danger);
+  --color-warning: var(--pv-warning);
+  --color-info: var(--pv-info);
+  --color-tier-1: var(--pv-tier-1);
+  --color-tier-2: var(--pv-tier-2);
+  --color-tier-3: var(--pv-tier-3);
+  --color-tier-4: var(--pv-tier-4);
+  --color-tier-5: var(--pv-tier-5);
+  --color-tier-6: var(--pv-tier-6);
+  --color-tier-7: var(--pv-tier-7);
+  --color-on-tier: var(--pv-on-tier);
+  --color-paper: var(--pv-paper);
+
+  --text-ui-xs: 0.694rem;
+  --text-ui-sm: 0.833rem;
+  --text-ui-base: 1rem;
+  --text-ui-lg: 1.2rem;
+  --text-ui-xl: 1.44rem;
+  --text-ui-2xl: 1.728rem;
+  --text-ui-3xl: 2.074rem;
+}
+
+:root {
+  color-scheme: light;
+
+  --pv-grid: 0.25rem;
+  --pv-space-1: calc(var(--pv-grid) * 1);
+  --pv-space-2: calc(var(--pv-grid) * 2);
+  --pv-space-3: calc(var(--pv-grid) * 3);
+  --pv-space-4: calc(var(--pv-grid) * 4);
+  --pv-space-6: calc(var(--pv-grid) * 6);
+  --pv-space-8: calc(var(--pv-grid) * 8);
+  --pv-space-12: calc(var(--pv-grid) * 12);
+
+  --pv-radius-sm: 0.5rem;
+  --pv-radius-md: 0.75rem;
+  --pv-radius-lg: 1rem;
+  --pv-radius-xl: 1.5rem;
+
+  --pv-canvas: oklch(0.985 0.006 88);
+  --pv-surface: oklch(0.965 0.008 88);
+  --pv-surface-raised: oklch(0.935 0.012 88);
+  --pv-surface-hover: oklch(0.895 0.016 88);
+  --pv-border: oklch(0.86 0.015 82);
+  --pv-border-strong: oklch(0.76 0.02 82);
+  --pv-foreground: oklch(0.205 0.018 70);
+  --pv-muted: oklch(0.43 0.02 70);
+  --pv-subtle: oklch(0.58 0.018 70);
+  --pv-accent: oklch(0.67 0.15 80);
+  --pv-accent-strong: oklch(0.61 0.16 76);
+  --pv-accent-soft: oklch(0.92 0.055 88);
+  --pv-on-accent: oklch(0.16 0.018 70);
+  --pv-success: oklch(0.53 0.145 145);
+  --pv-danger: oklch(0.56 0.19 25);
+  --pv-warning: oklch(0.62 0.16 62);
+  --pv-info: oklch(0.55 0.14 250);
+  /* Curriculum hues progress around the color wheel at a near-even cadence. */
+  --pv-tier-1: oklch(0.55 0.14 145);
+  --pv-tier-2: oklch(0.55 0.13 170);
+  --pv-tier-3: oklch(0.55 0.12 195);
+  --pv-tier-4: oklch(0.55 0.14 225);
+  --pv-tier-5: oklch(0.54 0.15 255);
+  --pv-tier-6: oklch(0.54 0.15 285);
+  --pv-tier-7: oklch(0.55 0.16 315);
+  --pv-on-tier: oklch(0.985 0.004 88);
+  --pv-paper: oklch(0.99 0.003 88);
+  --pv-shadow: 0 16px 40px oklch(0.2 0.02 70 / 0.1);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --pv-canvas: oklch(0.145 0.01 70);
+  --pv-surface: oklch(0.18 0.012 70);
+  --pv-surface-raised: oklch(0.235 0.014 70);
+  --pv-surface-hover: oklch(0.29 0.016 70);
+  --pv-border: oklch(0.30 0.014 70);
+  --pv-border-strong: oklch(0.39 0.016 70);
+  --pv-foreground: oklch(0.96 0.008 88);
+  --pv-muted: oklch(0.73 0.012 82);
+  --pv-subtle: oklch(0.56 0.012 82);
+  --pv-accent: oklch(0.86 0.13 92);
+  --pv-accent-strong: oklch(0.79 0.145 88);
+  --pv-accent-soft: oklch(0.27 0.04 88);
+  --pv-on-accent: oklch(0.17 0.018 70);
+  --pv-success: oklch(0.74 0.16 145);
+  --pv-danger: oklch(0.72 0.18 25);
+  --pv-warning: oklch(0.78 0.15 70);
+  --pv-info: oklch(0.74 0.13 250);
+  --pv-paper: oklch(0.99 0.003 88);
+  --pv-shadow: 0 18px 44px oklch(0 0 0 / 0.32);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --pv-canvas: oklch(0.145 0.01 70);
+    --pv-surface: oklch(0.18 0.012 70);
+    --pv-surface-raised: oklch(0.235 0.014 70);
+    --pv-surface-hover: oklch(0.29 0.016 70);
+    --pv-border: oklch(0.30 0.014 70);
+    --pv-border-strong: oklch(0.39 0.016 70);
+    --pv-foreground: oklch(0.96 0.008 88);
+    --pv-muted: oklch(0.73 0.012 82);
+    --pv-subtle: oklch(0.56 0.012 82);
+    --pv-accent: oklch(0.86 0.13 92);
+    --pv-accent-strong: oklch(0.79 0.145 88);
+    --pv-accent-soft: oklch(0.27 0.04 88);
+    --pv-on-accent: oklch(0.17 0.018 70);
+    --pv-success: oklch(0.74 0.16 145);
+    --pv-danger: oklch(0.72 0.18 25);
+    --pv-warning: oklch(0.78 0.15 70);
+    --pv-info: oklch(0.74 0.13 250);
+    --pv-shadow: 0 18px 44px oklch(0 0 0 / 0.32);
+  }
+}
+
+html,
+body {
+  min-height: 100%;
+  background: var(--pv-canvas);
+  color: var(--pv-foreground);
+}
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in oklch, var(--pv-accent) 28%, transparent);
+}
 
 @layer base {
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    outline-color: var(--pv-accent);
+  }
+
   button:active {
-    transform: scale(0.96);
-    transition: transform 0.1s;
+    transform: scale(0.97);
+    transition: transform 100ms ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
 @keyframes successPulse {
-  0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
-  70% { box-shadow: 0 0 0 12px rgba(74, 222, 128, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+  0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--pv-success) 40%, transparent); }
+  70% { box-shadow: 0 0 0 12px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
 }
 
 .success-pulse {
